@@ -9,11 +9,12 @@ from ..utils.config import (
     RETRIEVAL_TOP_K,
 )
 from .state import RAGState, DocumentRelevance
-from .prompt import GRADE_PROMPT
+from .prompt import GRADE_PROMPT, SYSTEM_PROMPT, REWRITE_PROMPT
 
 from langchain_openai import ChatOpenAI
 from langchain.messages import (
     HumanMessage,
+    SystemMessage,
 )
 
 def create_llm(
@@ -84,4 +85,58 @@ def grade_node(state: RAGState) -> dict:
 
     return {
         documents: relevant_docs,
+    }
+
+def generate_node(state: RAGState) -> dict:
+    """
+    生成节点：基于相关文档生成最终答案。
+
+    输出包含引用来源，便于用户追溯。
+    """
+    question = state["question"]
+    documents = state.get("documents", [])
+
+    # 构建上下文（带来源标注）
+    context_parts = []
+    for i, doc in enumerate(documents, 1):
+        source = doc.metadata.get("source", "未知")
+        folder = doc.metadata.get("folder", "")
+        context_parts.append(
+            f"[文档{i}] 来源: {source}\n分类: {folder}\n内容:\n{doc.page_content}"
+        )
+    context = "\n\n---\n\n".join(context_parts)
+
+    system_prompt = SYSTEM_PROMPT.format(context=context)
+    llm = create_llm()
+
+    messages = [
+        SystemMessage(content=system_prompt),
+        HumanMessage(content=question),
+    ]
+
+    response = llm.invoke(messages)
+
+    return {
+        "generation": response.content,
+    }
+
+def rewrite_node(state: RAGState) -> dict:
+    """
+    重写节点：当检索到的文档不相关时，优化查询表达。
+
+    使用 LLM 将模糊问题改写为更具体、更适合检索的形式。
+    限制最多重写 2 次，防止无限循环。
+    """
+    question = state["question"]
+    rewrite_count = state.get("rewrite_count", 0) + 1
+
+    llm = create_llm(temperature=0.3)
+    prompt = REWRITE_PROMPT.format(question=question)
+    response = llm.invoke([HumanMessage(content=prompt)])
+
+    rewritten = response.content.strip()
+
+    return {
+        "messages": [HumanMessage(content=rewritten)],
+        "rewrite_count": rewrite_count,
     }
