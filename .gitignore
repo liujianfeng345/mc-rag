@@ -10,6 +10,7 @@ build/
 
 # 向量数据库
 chroma_db/
+models/
 
 # uv
 .venv/
