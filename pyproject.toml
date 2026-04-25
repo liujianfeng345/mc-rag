@@ -5,5 +5,6 @@ description = "Minecraft RAG 系统"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "langchain>=1.2.15",
     "langgraph>=1.1.9",
 ]
