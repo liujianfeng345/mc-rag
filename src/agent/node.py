@@ -119,10 +119,14 @@ async def generate_node(state: RAGState) -> dict:
         HumanMessage(content=question),
     ]
 
-    response = await llm.ainvoke(messages)
+    # 流式调用 LLM，收集完整回复（token 级别事件由上层 astream_events 捕获）
+    full_content = ""
+    async for chunk in llm.astream(messages):
+        if chunk.content:
+            full_content += chunk.content
 
     return {
-        "generation": response.content,
+        "generation": full_content,
     }
 
 

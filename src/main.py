@@ -13,7 +13,6 @@ import asyncio
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
-from rich.markdown import Markdown
 
 from .utils.config import DOCS_DIR
 from .vector.document_loader import load_and_split_documents, get_document_stats
@@ -60,23 +59,42 @@ async def cmd_build():
 
 
 async def cmd_ask(question: str):
-    """单次问答"""
+    """单次问答（流式输出）"""
     store = VectorStore()
     graph = build_rag_graph(store)
 
     console.print(f"\n[bold cyan]🔍 问题: {question}[/bold cyan]\n")
 
-    console.print("[bold yellow]处理中...[/bold yellow]")
-    result = await graph.ainvoke({"question": question, "rewrite_count": 0})
+    console.print("[bold green]回答:[/bold green]")
+    console.print("─" * 60)
 
-    # 显示答案
-    answer = result.get("generation", "无法生成答案")
-    console.print(Panel(Markdown(answer), title="回答", border_style="green"))
+    # 收集最终状态用于显示引用
+    final_state: dict = {}
+
+    # 使用 astream_events 实现流式 token 输出
+    async for event in graph.astream_events(
+        {"question": question, "rewrite_count": 0},
+        version="v2",
+    ):
+        kind = event["event"]
+
+        # 流式打印 LLM 生成的每个 token
+        if kind == "on_chat_model_stream":
+            chunk = event["data"]["chunk"]
+            if chunk.content:
+                console.print(chunk.content, end="")
+
+        # 捕获节点输出，取最后一次作为最终状态
+        if kind == "on_chain_end" and isinstance(event.get("data", {}).get("output"), dict):
+            final_state.update(event["data"]["output"])
+
+    console.print("\n" + "─" * 60)
 
     # 显示引用
-    if result.get("documents"):
+    documents = final_state.get("documents", [])
+    if documents:
         console.print("\n[bold]📄 参考文档:[/bold]")
-        for doc in result["documents"]:
+        for doc in documents:
             source = doc.metadata.get("source", "未知")
             score = doc.metadata.get("_score", 0)
             console.print(f"  • {source} (相似度: {score:.3f})")
@@ -115,21 +133,37 @@ async def cmd_demo():
             break
 
         console.print("[dim]思考中...[/dim]")
-        result = await graph.ainvoke(
+
+        # 流式输出
+        console.print("[bold green]助手:[/bold green]")
+        console.print("─" * 60)
+        final_state: dict = {}
+
+        async for event in graph.astream_events(
             {
                 "question": question,
                 "messages": session_messages,
                 "rewrite_count": 0,
-            }
-        )
+            },
+            version="v2",
+        ):
+            kind = event["event"]
 
-        answer = result.get("generation", "无法生成答案")
-        console.print(Panel(Markdown(answer), title="助手", border_style="green"))
+            if kind == "on_chat_model_stream":
+                chunk = event["data"]["chunk"]
+                if chunk.content:
+                    console.print(chunk.content, end="")
+
+            if kind == "on_chain_end" and isinstance(event.get("data", {}).get("output"), dict):
+                final_state.update(event["data"]["output"])
+
+        console.print("\n" + "─" * 60)
 
         # 显示引用
-        if result.get("documents"):
+        documents = final_state.get("documents", [])
+        if documents:
             sources = set()
-            for doc in result["documents"]:
+            for doc in documents:
                 sources.add(doc.metadata.get("source", "未知"))
             if sources:
                 console.print(
