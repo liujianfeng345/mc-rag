@@ -1,0 +1,9 @@
+[project]
+name = "mc-rag"
+version = "0.1.0"
+description = "Minecraft RAG 系统"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "langgraph>=1.1.9",
+]
