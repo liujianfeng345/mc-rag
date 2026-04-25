@@ -17,6 +17,7 @@ from langchain.messages import (
     SystemMessage,
 )
 
+
 def create_llm(
     model: str = None,
     temperature: float = None,
@@ -33,7 +34,7 @@ def create_llm(
     return llm
 
 
-def retrieve_node(state: RAGState, vector_store) -> dict:
+async def retrieve_node(state: RAGState, vector_store) -> dict:
     """
     检索节点：根据用户问题从向量数据库检索相关文档。
 
@@ -48,13 +49,14 @@ def retrieve_node(state: RAGState, vector_store) -> dict:
                 question = msg.content
                 break
 
-    documents = vector_store.search(question, top_k=RETRIEVAL_TOP_K)
+    documents = await vector_store.search(question, top_k=RETRIEVAL_TOP_K)
 
     return {
         "documents": documents,
     }
 
-def grade_node(state: RAGState) -> dict:
+
+async def grade_node(state: RAGState) -> dict:
     """
     评分节点：评估检索到的文档是否与问题相关。
 
@@ -65,7 +67,7 @@ def grade_node(state: RAGState) -> dict:
 
     if not documents:
         return {"documents": []}
-    
+
     llm = create_llm(temperature=0)
     llm_structured = llm.with_structured_output(DocumentRelevance)
     relevant_docs = []
@@ -73,9 +75,11 @@ def grade_node(state: RAGState) -> dict:
     for doc in documents:
         prompt = GRADE_PROMPT.format(
             question=question,
-            document=doc.page_content[:2000], # 控制token消耗
+            document=doc.page_content[:2000],
         )
-        response: DocumentRelevance = llm_structured.invoke([HumanMessage(content=prompt)])
+        response: DocumentRelevance = await llm_structured.ainvoke(
+            [HumanMessage(content=prompt)]
+        )
         grade = response.relevant
         if grade == "相关":
             relevant_docs.append(doc)
@@ -87,7 +91,8 @@ def grade_node(state: RAGState) -> dict:
         "documents": relevant_docs,
     }
 
-def generate_node(state: RAGState) -> dict:
+
+async def generate_node(state: RAGState) -> dict:
     """
     生成节点：基于相关文档生成最终答案。
 
@@ -114,13 +119,14 @@ def generate_node(state: RAGState) -> dict:
         HumanMessage(content=question),
     ]
 
-    response = llm.invoke(messages)
+    response = await llm.ainvoke(messages)
 
     return {
         "generation": response.content,
     }
 
-def rewrite_node(state: RAGState) -> dict:
+
+async def rewrite_node(state: RAGState) -> dict:
     """
     重写节点：当检索到的文档不相关时，优化查询表达。
 
@@ -132,7 +138,7 @@ def rewrite_node(state: RAGState) -> dict:
 
     llm = create_llm(temperature=0.3)
     prompt = REWRITE_PROMPT.format(question=question)
-    response = llm.invoke([HumanMessage(content=prompt)])
+    response = await llm.ainvoke([HumanMessage(content=prompt)])
 
     rewritten = response.content.strip()
 

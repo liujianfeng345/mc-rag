@@ -61,9 +61,9 @@ def build_rag_graph(vector_store) -> StateGraph:
     workflow = StateGraph(RAGState)
 
     # 添加节点 - 使用闭包将 vector_store 绑定到检索节点
-    def _retrieve(state: RAGState) -> dict:
-        return  retrieve_node(state, vector_store)
-    
+    async def _retrieve(state: RAGState) -> dict:
+        return await retrieve_node(state, vector_store)
+
     workflow.add_node("retrieve", _retrieve)
     workflow.add_node("grade", grade_node)
     workflow.add_node("generate", generate_node)

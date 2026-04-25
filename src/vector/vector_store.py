@@ -7,6 +7,7 @@
 3. 集合管理（重置、统计）
 """
 
+import asyncio
 import json
 from pathlib import Path
 from typing import Optional
@@ -88,16 +89,7 @@ class VectorStore:
             metadata={"hnsw:space": "cosine"},
         )
 
-    # -------------------------------------------------------------------------
-    # 文档管理
-    # -------------------------------------------------------------------------
-    def add_documents(self, documents: list[Document]) -> int:
-        """
-        批量添加文档到向量存储。
-
-        自动生成唯一 ID（基于 source + chunk_index），支持幂等添加。
-        返回新增的文档数。
-        """
+    async def add_documents(self, documents: list[Document]) -> int:
         if not documents:
             return 0
 
@@ -116,11 +108,11 @@ class VectorStore:
             return 0
 
         texts = [doc.page_content for doc in new_docs]
-        embeddings = self.embeddings.embed_documents(texts)
-        # ChromaDB 只接受 str/int/float/bool/list/None，将嵌套 dict/list 序列化为 JSON 字符串
+        embeddings = await asyncio.to_thread(self.embeddings.embed_documents, texts)
         metadatas = [_sanitize_metadata(doc.metadata) for doc in new_docs]
 
-        self._collection.add(
+        await asyncio.to_thread(
+            self._collection.add,
             ids=new_ids,
             embeddings=embeddings,
             documents=texts,
@@ -129,10 +121,7 @@ class VectorStore:
 
         return len(new_docs)
 
-    # -------------------------------------------------------------------------
-    # 检索
-    # -------------------------------------------------------------------------
-    def search(
+    async def search(
         self,
         query: str,
         top_k: int = None,
@@ -150,9 +139,10 @@ class VectorStore:
             list[Document]: 按相似度降序排列的文档列表
         """
         top_k = top_k or RETRIEVAL_TOP_K
-        query_embedding = self.embeddings.embed_query(query)
+        query_embedding = await asyncio.to_thread(self.embeddings.embed_query, query)
 
-        results = self._collection.query(
+        results = await asyncio.to_thread(
+            self._collection.query,
             query_embeddings=[query_embedding],
             n_results=top_k,
             where=where,
@@ -165,12 +155,12 @@ class VectorStore:
                 page_content=results["documents"][0][i],
                 metadata=_restore_metadata(results["metadatas"][0][i] or {}),
             )
-            doc.metadata["_score"] = 1 - results["distances"][0][i]  # cosine → 相似度
+            doc.metadata["_score"] = 1 - results["distances"][0][i]
             documents.append(doc)
 
         return documents
 
-    def search_with_filter(
+    async def search_with_filter(
         self,
         query: str,
         folder: str = None,
@@ -182,22 +172,18 @@ class VectorStore:
         可按文档所属文件夹过滤，适用于用户明确想查询特定分类的场景。
         """
         where = {"folder": folder} if folder else None
-        return self.search(query, top_k=top_k, where=where)
+        return await self.search(query, top_k=top_k, where=where)
 
-    # -------------------------------------------------------------------------
-    # 管理
-    # -------------------------------------------------------------------------
-    def reset(self) -> None:
-        """清空向量存储并重建集合。"""
-        self._client.delete_collection(self.collection_name)
-        self._collection = self._client.create_collection(
+    async def reset(self) -> None:
+        await asyncio.to_thread(self._client.delete_collection, self.collection_name)
+        self._collection = await asyncio.to_thread(
+            self._client.create_collection,
             name=self.collection_name,
             metadata={"hnsw:space": "cosine"},
         )
 
-    def stats(self) -> dict:
-        """获取向量存储统计信息。"""
-        count = self._collection.count()
+    async def stats(self) -> dict:
+        count = await asyncio.to_thread(self._collection.count)
         return {
             "集合名称": self.collection_name,
             "文档块数量": count,
