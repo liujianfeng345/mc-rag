@@ -23,3 +23,5 @@ models/
 
 # claude
 .claude/
+
+error.txt

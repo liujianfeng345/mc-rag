@@ -7,6 +7,7 @@
 3. 集合管理（重置、统计）
 """
 
+import json
 from pathlib import Path
 from typing import Optional
 
@@ -22,6 +23,31 @@ from ..utils.config import (
     EMBEDDING_MODEL,
     EMBEDDING_DEVICE,
 )
+
+
+def _sanitize_metadata(metadata: dict) -> dict:
+    """将 metadata 中不可序列化的值（dict/list）转为 JSON 字符串，以符合 ChromaDB 约束。"""
+    sanitized = {}
+    for key, value in metadata.items():
+        if isinstance(value, (dict, list)):
+            sanitized[key] = json.dumps(value, ensure_ascii=False)
+        else:
+            sanitized[key] = value
+    return sanitized
+
+
+def _restore_metadata(metadata: dict) -> dict:
+    """将 JSON 字符串值尝试还原为原始类型（dict/list），反向操作 _sanitize_metadata。"""
+    restored = {}
+    for key, value in metadata.items():
+        if isinstance(value, str) and (value.startswith("{") or value.startswith("[")):
+            try:
+                restored[key] = json.loads(value)
+            except (json.JSONDecodeError, ValueError):
+                restored[key] = value
+        else:
+            restored[key] = value
+    return restored
 
 
 class VectorStore:
@@ -91,7 +117,8 @@ class VectorStore:
 
         texts = [doc.page_content for doc in new_docs]
         embeddings = self.embeddings.embed_documents(texts)
-        metadatas = [doc.metadata for doc in new_docs]
+        # ChromaDB 只接受 str/int/float/bool/list/None，将嵌套 dict/list 序列化为 JSON 字符串
+        metadatas = [_sanitize_metadata(doc.metadata) for doc in new_docs]
 
         self._collection.add(
             ids=new_ids,
@@ -136,7 +163,7 @@ class VectorStore:
         for i in range(len(results["ids"][0])):
             doc = Document(
                 page_content=results["documents"][0][i],
-                metadata=results["metadatas"][0][i],
+                metadata=_restore_metadata(results["metadatas"][0][i] or {}),
             )
             doc.metadata["_score"] = 1 - results["distances"][0][i]  # cosine → 相似度
             documents.append(doc)

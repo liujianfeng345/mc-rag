@@ -11,7 +11,7 @@ from ..utils.config import (
 from .state import RAGState, DocumentRelevance
 from .prompt import GRADE_PROMPT, SYSTEM_PROMPT, REWRITE_PROMPT
 
-from langchain_openai import ChatOpenAI
+from langchain_deepseek import ChatDeepSeek
 from langchain.messages import (
     HumanMessage,
     SystemMessage,
@@ -21,9 +21,9 @@ def create_llm(
     model: str = None,
     temperature: float = None,
     max_tokens: int = None,
-) -> ChatOpenAI:
+) -> ChatDeepSeek:
     """创建大模型"""
-    llm = ChatOpenAI(
+    llm = ChatDeepSeek(
         model=model or LLM_MODEL,
         temperature=temperature if temperature is not None else LLM_TEMPERATURE,
         max_tokens=max_tokens or LLM_MAX_TOKENS,
@@ -84,7 +84,7 @@ def grade_node(state: RAGState) -> dict:
         relevant_docs = documents
 
     return {
-        documents: relevant_docs,
+        "documents": relevant_docs,
     }
 
 def generate_node(state: RAGState) -> dict:
