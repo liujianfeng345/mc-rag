@@ -11,6 +11,8 @@ Minecraft 开发者文档 Agentic RAG 问答系统。
 - **LangGraph** — 有向图工作流编排
 - **DeepSeek API** — 大语言模型（OpenAI 兼容接口）
 - **ChromaDB** — 向量数据库（文档检索）
+- **HuggingFace Embeddings** — 本地嵌入模型（多语言，支持中文）
+- **Rich** — 终端交互界面
 
 ## 架构
 
@@ -73,10 +75,6 @@ cd mc-rag
 
 # 安装依赖
 uv sync
-
-# 激活虚拟环境
-.venv\Scripts\activate    # Windows
-source .venv/bin/activate  # Linux/macOS
 ```
 
 ### 配置
@@ -90,38 +88,60 @@ cp .env.example .env
 编辑 `.env` 文件：
 
 ```env
+# DeepSeek API 配置（兼容 OpenAI SDK）
 DEEPSEEK_API_KEY=sk-your-api-key-here
 DEEPSEEK_BASE_URL=https://api.deepseek.com/v1
+
+# 模型配置
 LLM_MODEL=deepseek-chat
-LLM_TEMPERATURE=0.1
-LLM_MAX_TOKENS=4096
-RETRIEVAL_TOP_K=5
+EMBEDDING_MODEL=sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
+
+# 文档配置
+DOCS_DIR=./data
+CHUNK_SIZE=1000
+CHUNK_OVERLAP=200
+
+# 向量数据库配置
+VECTOR_DB_DIR=./chroma_db
 ```
 
-### 运行
+### 使用
 
 ```bash
-python main.py
+# 1. 构建文档向量索引（首次使用前必须执行）
+uv run python -m src.main build
+
+# 2. 单次问答
+uv run python -m src.main ask "如何自定义物品？"
+
+# 3. 交互式问答
+uv run python -m src.main demo
 ```
 
 ## 项目结构
 
 ```
 mc-rag/
-├── main.py                 # 入口文件
-├── pyproject.toml          # 项目元数据与依赖
-├── .env                    # 环境变量（不提交）
-├── .env.example            # 环境变量模板
+├── main.py                  # 根入口（占位）
+├── pyproject.toml           # 项目元数据与依赖
+├── .env                     # 环境变量（不提交）
+├── .env.example             # 环境变量模板
 ├── src/
+│   ├── main.py              # CLI 入口（build / ask / demo）
 │   ├── agent/
-│   │   ├── graph.py        # LangGraph 图构建
-│   │   ├── node.py         # 各节点函数实现
-│   │   ├── prompt.py       # LLM 提示词模板
-│   │   └── state.py        # 图状态类型定义
+│   │   ├── graph.py         # LangGraph 图构建与路由决策
+│   │   ├── node.py          # 各节点函数实现（检索/评分/生成/重写）
+│   │   ├── prompt.py        # LLM 提示词模板
+│   │   └── state.py         # 图状态类型定义
+│   ├── vector/
+│   │   ├── vector_store.py       # ChromaDB 向量存储封装
+│   │   └── document_loader.py    # Markdown 文档加载与分块
 │   └── utils/
-│       └── config.py       # 配置管理
-└── data/
-    └── mcguide/            # 我的世界开发者指南文档
+│       └── config.py        # 配置管理（环境变量读取）
+├── data/
+│   └── mcguide/             # 我的世界开发者指南文档
+├── chroma_db/               # 向量数据库持久化目录（自动生成）
+└── image/                   # 项目截图
 ```
 
 ## 知识源
