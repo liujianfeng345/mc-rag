@@ -10,7 +10,8 @@ Minecraft 开发者文档 Agentic RAG 问答系统。
 - **LangChain** — LLM 调用与文档处理
 - **LangGraph** — 有向图工作流编排
 - **DeepSeek API** — 大语言模型（OpenAI 兼容接口）
-- **ChromaDB** — 向量数据库（文档检索）
+- **ChromaDB** — 向量数据库（语义检索）
+- **BM25 + RRF** — 关键词检索与重排序（混合检索，提升召回率）
 - **HuggingFace Embeddings** — 本地嵌入模型（多语言，支持中文）
 - **LangSmith** — LLM 可观测性追踪
 - **Rich** — 终端交互界面
@@ -97,7 +98,7 @@ Minecraft 开发者文档 Agentic RAG 问答系统。
 
 | 节点 | 功能 |
 |---|---|
-| `retrieve` | 从 ChromaDB 检索相关文档 |
+| `retrieve` | 混合检索：语义检索 + BM25 关键词检索 + RRF 重排序 |
 | `grade` | 用 LLM 逐篇评估文档相关性，过滤无关文档 |
 | `generate` | 基于相关文档生成带引用来源的答案 |
 | `rewrite` | 优化用户查询并重新检索（最多 2 次） |
@@ -150,6 +151,10 @@ CHUNK_OVERLAP=200
 # 向量数据库配置
 VECTOR_DB_DIR=./chroma_db
 
+# 混合检索参数（可选）
+BM25_TOP_K=5
+RRF_K=60
+
 # LangSmith 追踪配置（可选，默认关闭）
 LANGCHAIN_TRACING_V2=false
 LANGCHAIN_API_KEY=your_langsmith_api_key_here
@@ -198,7 +203,7 @@ mc-rag/
 │   │   ├── prompt.py             # LLM 提示词模板
 │   │   └── state.py              # 图状态类型定义
 │   ├── vector/
-│   │   ├── vector_store.py       # ChromaDB 向量存储封装
+│   │   ├── vector_store.py       # ChromaDB 向量存储封装（支持语义 + BM25 混合检索）
 │   │   └── document_loader.py    # Markdown 文档加载与分块
 │   └── utils/
 │       └── config.py        # 配置管理（环境变量读取）
