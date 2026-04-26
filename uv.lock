@@ -1079,7 +1079,7 @@ wheels = [
 [[package]]
 name = "mc-rag"
 version = "0.1.0"
-source = { virtual = "." }
+source = { editable = "." }
 dependencies = [
     { name = "chromadb" },
     { name = "dotenv" },
@@ -1089,6 +1089,7 @@ dependencies = [
     { name = "langchain-openai" },
     { name = "langchain-text-splitters" },
     { name = "langgraph" },
+    { name = "langsmith" },
     { name = "sentence-transformers" },
 ]
 
@@ -1102,6 +1103,7 @@ requires-dist = [
     { name = "langchain-openai", specifier = ">=1.2.1" },
     { name = "langchain-text-splitters", specifier = ">=1.1.2" },
     { name = "langgraph", specifier = ">=1.1.9" },
+    { name = "langsmith", specifier = ">=0.3.0" },
     { name = "sentence-transformers", specifier = ">=5.4.1" },
 ]
 

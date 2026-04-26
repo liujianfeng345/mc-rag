@@ -1,3 +1,14 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta:__legacy__"
+
+[tool.setuptools]
+py-modules = ["graph_server"]
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
 [project]
 name = "mc-rag"
 version = "0.1.0"
@@ -13,5 +24,6 @@ dependencies = [
     "langchain-openai>=1.2.1",
     "langchain-text-splitters>=1.1.2",
     "langgraph>=1.1.9",
+    "langsmith>=0.3.0",
     "sentence-transformers>=5.4.1",
 ]

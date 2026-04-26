@@ -25,3 +25,5 @@ models/
 .claude/
 
 error.txt
+
+.langgraph_api

@@ -47,7 +47,10 @@ async def retrieve_node(state: RAGState, vector_store: VectorStore) -> Command[L
 
     首次检索使用原始问题；重写后使用重写的问题。
     """
-    question = state['current_query'] if state.get('current_query') else state["question"]
+    if not state.get("question"):  # 适配langsmith
+        question = state["messages"][0].content[0]['text']
+    else:
+        question = state['current_query'] if state.get('current_query') else state["question"]
 
     documents = await vector_store.search(question, top_k=RETRIEVAL_TOP_K)
 
@@ -55,6 +58,7 @@ async def retrieve_node(state: RAGState, vector_store: VectorStore) -> Command[L
         goto="grade",
         update={
             "documents": documents,
+            "question": question,
         }
     )
 

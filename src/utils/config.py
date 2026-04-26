@@ -53,6 +53,15 @@ DOCS_DIR = os.getenv("DOCS_DIR", str(PROJECT_ROOT / "data"))
 CHUNK_SIZE = int(os.getenv("CHUNK_SIZE", "1000"))
 CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "200"))
 
+# =============================================================================
+# LangSmith 追踪配置
+# 设置环境变量后，LangChain/LangGraph 会自动上报 trace 到 LangSmith
+# 官网: https://smith.langchain.com
+# =============================================================================
+LANGSMITH_TRACING = os.getenv("LANGCHAIN_TRACING_V2", "false").lower() == "true"
+LANGSMITH_API_KEY = os.getenv("LANGCHAIN_API_KEY", "")
+LANGSMITH_PROJECT = os.getenv("LANGCHAIN_PROJECT", "mc-rag")
+
 # 文档分块分隔符（Markdown 特有）
 CHUNK_SEPARATORS = [
     "\n## ",     # 二级标题优先

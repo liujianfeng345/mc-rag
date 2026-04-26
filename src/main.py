@@ -22,6 +22,17 @@ from .vector.vector_store import VectorStore
 
 load_dotenv()
 
+# LangSmith 追踪初始化
+if os.getenv("LANGCHAIN_TRACING_V2", "false").lower() == "true":
+    try:
+        import langsmith
+        console = Console()
+        console.print(
+            f"[dim]🔍 LangSmith 追踪已启用 | 项目: {os.getenv('LANGCHAIN_PROJECT', 'mc-rag')}[/dim]"
+        )
+    except ImportError:
+        pass
+
 AGENT_VERSION = os.getenv("AGENT_VERSION", "v1")
 if AGENT_VERSION == "v2":
     from .agent_v2.graph import build_rag_graph
