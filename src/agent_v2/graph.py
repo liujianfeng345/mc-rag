@@ -15,31 +15,6 @@ from ..vector.vector_store import VectorStore
 
 
 # =============================================================================
-# 路由决策
-# =============================================================================
-def grade_router(state: RAGState) -> Literal["generate", "rewrite"]:
-    """
-    评分后的路由决策。
-
-    - 如果已有足够的相关文档 → 进入生成
-    - 如果重写超过2次仍无相关文档 → 强制生成（给出降级回答）
-    - 否则 → 进入重写，优化查询
-    """
-    documents = state.get("documents", [])
-    rewrite_count = state.get("rewrite_count", 0)
-
-    # 有文档且未超过重写限制 → 直接生成
-    if len(documents) >= 2:
-        return "generate"
-
-    # 超过重写限制 → 强制生成（哪怕文档质量不高）
-    if rewrite_count >= 2:
-        return "generate"
-
-    # 文档不足 → 重写查询
-    return "rewrite"
-
-# =============================================================================
 # 图构建
 # =============================================================================
 def build_rag_graph(vector_store: VectorStore = None) -> StateGraph:
@@ -75,23 +50,6 @@ def build_rag_graph(vector_store: VectorStore = None) -> StateGraph:
 
     # 添加边
     workflow.add_edge(START, "retrieve")
-    workflow.add_edge("retrieve", "grade")
-
-    # 条件路由：评分结果决定下一步
-    workflow.add_conditional_edges(
-        "grade",
-        grade_router,
-        {
-            "generate": "generate",
-            "rewrite": "rewrite",
-        },
-    )
-
-    # 重写后回到检索
-    workflow.add_edge("rewrite", "retrieve")
-
-    # 生成后结束
-    workflow.add_edge("generate", END)
 
     # 编译图
     return workflow.compile()

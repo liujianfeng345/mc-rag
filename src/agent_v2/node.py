@@ -1,5 +1,6 @@
 """节点函数"""
 import asyncio
+from typing import Literal
 
 from langchain_deepseek import ChatDeepSeek
 from langchain.messages import (
@@ -8,6 +9,8 @@ from langchain.messages import (
     AIMessage,
 )
 from langchain_core.documents import Document
+from langgraph.types import Command
+from langgraph.graph import END
 
 from ..utils.config import (
     LLM_MODEL,
@@ -38,7 +41,7 @@ def create_llm(
     return llm
 
 
-async def retrieve_node(state: RAGState, vector_store: VectorStore) -> dict:
+async def retrieve_node(state: RAGState, vector_store: VectorStore) -> Command[Literal["grade"]]:
     """
     检索节点：根据用户问题从向量数据库检索相关文档。
 
@@ -48,9 +51,12 @@ async def retrieve_node(state: RAGState, vector_store: VectorStore) -> dict:
 
     documents = await vector_store.search(question, top_k=RETRIEVAL_TOP_K)
 
-    return {
-        "documents": documents,
-    }
+    return Command(
+        goto="grade",
+        update={
+            "documents": documents,
+        }
+    )
 
 async def grade_single_doc(doc: Document, question: str, llm_structured: ChatDeepSeek):
     prompt = GRADE_PROMPT.format(
@@ -66,7 +72,7 @@ async def grade_single_doc(doc: Document, question: str, llm_structured: ChatDee
         grade = "相关"
     return doc, grade
 
-async def grade_node(state: RAGState) -> dict:
+async def grade_node(state: RAGState) -> Command[Literal["rewrite", "generate"]]:
     """
     评分节点：评估检索到的文档是否与问题相关。
 
@@ -76,7 +82,12 @@ async def grade_node(state: RAGState) -> dict:
     documents = state.get("documents", [])
 
     if not documents:
-        return {"documents": []}
+        return Command(
+            goto="rewrite",
+            update={
+                "documents": documents,
+            }
+        )
 
     llm = create_llm(temperature=0)
     llm_structured = llm.with_structured_output(DocumentRelevance)
@@ -88,12 +99,22 @@ async def grade_node(state: RAGState) -> dict:
     results = await asyncio.gather(*tasks)
     relevant_docs = [doc for doc, grade in results if grade == "相关"]
 
-    return {
-        "documents": relevant_docs,
-    }
+    if len(relevant_docs) >= 2:
+        return Command(
+            goto="generate",
+            update={
+                "documents": relevant_docs,
+            }
+        )
+    else:
+        return Command(
+            goto="rewrite",
+            update={
+                "documents": relevant_docs,
+            }
+        )
 
-
-async def generate_node(state: RAGState) -> dict:
+async def generate_node(state: RAGState) -> Command[Literal["__end__"]]:
     """
     生成节点：基于相关文档生成最终答案。
 
@@ -126,13 +147,16 @@ async def generate_node(state: RAGState) -> dict:
         if chunk.content:
             full_content += chunk.content
 
-    return {
-        "generation": full_content,
-        "messages": [AIMessage(content=full_content)]
-    }
+    return Command(
+        goto=END,
+        update={
+            "generation": full_content,
+            "messages": [AIMessage(content=full_content)]
+        }
+    )
 
 
-async def rewrite_node(state: RAGState) -> dict:
+async def rewrite_node(state: RAGState) -> Command[Literal["retrieve", "generate"]]:
     """
     重写节点：当检索到的文档不相关时，优化查询表达。
 
@@ -140,7 +164,12 @@ async def rewrite_node(state: RAGState) -> dict:
     限制最多重写 2 次，防止无限循环。
     """
     question = state["question"]
-    rewrite_count = state.get("rewrite_count", 0) + 1
+    rewrite_count = state.get("rewrite_count", 0)
+    if rewrite_count >= 2:
+        return Command(
+            goto="generate",
+            update={"documents": state.get("documents", [])}
+        )
 
     llm = create_llm(temperature=0.3)
     prompt = REWRITE_PROMPT.format(question=question)
@@ -148,8 +177,11 @@ async def rewrite_node(state: RAGState) -> dict:
 
     rewritten = response.content.strip()
 
-    return {
-        "messages": [HumanMessage(content=rewritten)],
-        "rewrite_count": rewrite_count,
-        "current_query": rewritten,
-    }
+    return Command(
+        goto="retrieve",
+        update={
+            "messages": [HumanMessage(content=rewritten)],
+            "rewrite_count": rewrite_count + 1,
+            "current_query": rewritten,
+        }
+    )
