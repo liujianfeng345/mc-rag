@@ -1,7 +1,8 @@
 """状态定义"""
 
-from typing import TypedDict, Annotated, Literal
+from typing import Annotated, Literal
 from pydantic import BaseModel, Field
+from typing_extensions import TypedDict
 
 from langgraph.graph.message import add_messages
 from langchain_core.documents import Document

@@ -49,7 +49,7 @@ async def retrieve_node(state: RAGState, vector_store: VectorStore) -> dict:
     else:
         question = state['current_query'] if state.get('current_query') else state["question"]
 
-    documents = await vector_store.search(question, top_k=RETRIEVAL_TOP_K)
+    documents = await vector_store.hybrid_search(question, top_k=RETRIEVAL_TOP_K)
 
     return {
         "documents": documents,

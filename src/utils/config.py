@@ -34,6 +34,10 @@ VECTOR_COLLECTION = os.getenv("VECTOR_COLLECTION", "mc_docs")
 # 检索参数
 RETRIEVAL_TOP_K = int(os.getenv("RETRIEVAL_TOP_K", "5"))
 
+# 混合检索参数
+BM25_TOP_K = int(os.getenv("BM25_TOP_K", "5"))   # BM25 关键词检索返回数量
+RRF_K = int(os.getenv("RRF_K", "60"))             # RRF 重排序平滑参数
+
 
 # =============================================================================
 # 嵌入模型配置
