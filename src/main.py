@@ -9,6 +9,8 @@ RAG 系统主入口
 
 import argparse
 import asyncio
+import os
+from dotenv import load_dotenv
 
 from rich.console import Console
 from rich.table import Table
@@ -17,7 +19,14 @@ from rich.panel import Panel
 from .utils.config import DOCS_DIR
 from .vector.document_loader import load_and_split_documents, get_document_stats
 from .vector.vector_store import VectorStore
-from .agent.graph import build_rag_graph
+
+load_dotenv()
+
+AGENT_VERSION = os.getenv("AGENT_VERSION", "v1")
+if AGENT_VERSION == "v2":
+    from .agent_v2.graph import build_rag_graph
+else:
+    from .agent.graph import build_rag_graph
 
 console = Console()
 
@@ -85,7 +94,9 @@ async def cmd_ask(question: str):
                 console.print(chunk.content, end="")
 
         # 捕获节点输出，取最后一次作为最终状态
-        if kind == "on_chain_end" and isinstance(event.get("data", {}).get("output"), dict):
+        if kind == "on_chain_end" and isinstance(
+            event.get("data", {}).get("output"), dict
+        ):
             final_state.update(event["data"]["output"])
 
     console.print("\n" + "─" * 60)
@@ -154,7 +165,9 @@ async def cmd_demo():
                 if chunk.content:
                     console.print(chunk.content, end="")
 
-            if kind == "on_chain_end" and isinstance(event.get("data", {}).get("output"), dict):
+            if kind == "on_chain_end" and isinstance(
+                event.get("data", {}).get("output"), dict
+            ):
                 final_state.update(event["data"]["output"])
 
         console.print("\n" + "─" * 60)
