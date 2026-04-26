@@ -1,4 +1,13 @@
 """节点函数"""
+import asyncio
+
+from langchain_deepseek import ChatDeepSeek
+from langchain.messages import (
+    HumanMessage,
+    SystemMessage,
+    AIMessage,
+)
+from langchain_core.documents import Document
 
 from ..utils.config import (
     LLM_MODEL,
@@ -11,13 +20,6 @@ from ..utils.config import (
 from .state import RAGState, DocumentRelevance
 from .prompt import GRADE_PROMPT, SYSTEM_PROMPT, REWRITE_PROMPT
 from ..vector.vector_store import VectorStore
-
-from langchain_deepseek import ChatDeepSeek
-from langchain.messages import (
-    HumanMessage,
-    SystemMessage,
-    AIMessage,
-)
 
 
 def create_llm(
@@ -50,6 +52,19 @@ async def retrieve_node(state: RAGState, vector_store: VectorStore) -> dict:
         "documents": documents,
     }
 
+async def grade_single_doc(doc: Document, question: str, llm_structured: ChatDeepSeek):
+    prompt = GRADE_PROMPT.format(
+        question=question,
+        document=doc.page_content[:2000],
+    )
+    response: DocumentRelevance = await llm_structured.ainvoke(
+        [HumanMessage(content=prompt)]
+    )
+    try:
+        grade = response.relevant
+    except:
+        grade = "相关"
+    return doc, grade
 
 async def grade_node(state: RAGState) -> dict:
     """
@@ -65,22 +80,13 @@ async def grade_node(state: RAGState) -> dict:
 
     llm = create_llm(temperature=0)
     llm_structured = llm.with_structured_output(DocumentRelevance)
-    relevant_docs = []
 
+    tasks = []
     for doc in documents:
-        prompt = GRADE_PROMPT.format(
-            question=question,
-            document=doc.page_content[:2000],
-        )
-        response: DocumentRelevance = await llm_structured.ainvoke(
-            [HumanMessage(content=prompt)]
-        )
-        try:
-            grade = response.relevant
-        except:
-            grade = "相关"
-        if grade == "相关":
-            relevant_docs.append(doc)
+        tasks.append(grade_single_doc(doc, question, llm_structured))
+    
+    results = await asyncio.gather(*tasks)
+    relevant_docs = [doc for doc, grade in results if grade == "相关"]
 
     return {
         "documents": relevant_docs,
