@@ -16,6 +16,12 @@ Minecraft 开发者文档 Agentic RAG 问答系统。
 
 ## 架构
 
+项目提供两种 Agent 版本，可通过 `AGENT_VERSION` 环境变量切换（默认 v1）。
+
+### v1（静态路由）— `src/agent/`
+
+路由逻辑集中在 `graph.py` 的 `grade_router` 函数中，通过 `add_conditional_edges` 在构建图时静态定义。
+
 ```
                     ┌─────────────────────────────────────┐
                     │              START                  │
@@ -49,6 +55,42 @@ Minecraft 开发者文档 Agentic RAG 问答系统。
                 │     END     │
                 └─────────────┘
 ```
+
+### v2（动态路由）— `src/agent_v2/`
+
+路由逻辑分散在各个节点内部，每个节点通过 `Command(goto=...)` 动态指定下一跳，`graph.py` 只定义 START → retrieve 一条边，不再需要集中的路由函数。
+
+```
+                    ┌─────────────────────────────────────┐
+                    │              START                  │
+                    └──────────┬──────────────────────────┘
+                               │
+                    ┌──────────▼──────────┐
+                    │      retrieve       │  ──→ grade（Command 指定）
+                    └──────────────────────┘
+                               │
+                    ┌──────────▼──────────┐
+                    │       grade         │  ──→ generate / rewrite（Command 指定）
+                    └──────────────────────┘
+                      ↙                ↘
+            ┌──────────▼────┐    ┌──────▼──────────┐
+            │   generate    │    │    rewrite      │  ──→ retrieve / generate
+            │  (Command 到  │    │  (Command 指定)  │      （重写≥2次则直接生成）
+            │     END)      │    └──────────────────┘
+            └───────┬───────┘
+                    │
+                    ▼
+                    END
+```
+
+### 版本对比
+
+| 特性 | v1（`src/agent/`） | v2（`src/agent_v2/`） |
+|---|---|---|
+| 路由方式 | 集中式：`grade_router` 函数 + `add_conditional_edges` | 分散式：节点内 `Command(goto=...)` |
+| 图结构 | 静态边 + 条件边 | 仅 START → retrieve 一条边 |
+| 可扩展性 | 新增节点需修改路由函数 | 新增节点只需在节点内指定跳转 |
+| 职责划分 | graph 控制流，node 纯逻辑 | graph 极简，node 同时负责路由决策 |
 
 ### 工作流节点
 
@@ -96,6 +138,9 @@ DEEPSEEK_BASE_URL=https://api.deepseek.com/v1
 LLM_MODEL=deepseek-chat
 EMBEDDING_MODEL=sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
 
+# Agent 版本（v1: 静态路由, v2: 动态路由）
+AGENT_VERSION=v1
+
 # 文档配置
 DOCS_DIR=./data
 CHUNK_SIZE=1000
@@ -111,10 +156,13 @@ VECTOR_DB_DIR=./chroma_db
 # 1. 构建文档向量索引（首次使用前必须执行）
 uv run python -m src.main build
 
-# 2. 单次问答
+# 2. 单次问答（默认 v1 版本）
 uv run python -m src.main ask "如何自定义物品？"
 
-# 3. 交互式问答
+# 3. 使用 v2 动态路由版本
+AGENT_VERSION=v2 uv run python -m src.main ask "如何自定义物品？"
+
+# 4. 交互式问答
 uv run python -m src.main demo
 ```
 
@@ -128,11 +176,16 @@ mc-rag/
 ├── .env.example             # 环境变量模板
 ├── src/
 │   ├── main.py              # CLI 入口（build / ask / demo）
-│   ├── agent/
-│   │   ├── graph.py         # LangGraph 图构建与路由决策
-│   │   ├── node.py          # 各节点函数实现（检索/评分/生成/重写）
-│   │   ├── prompt.py        # LLM 提示词模板
-│   │   └── state.py         # 图状态类型定义
+│   ├── agent/                    # v1: 静态路由版本
+│   │   ├── graph.py              # LangGraph 图构建与路由决策
+│   │   ├── node.py               # 各节点函数实现（检索/评分/生成/重写）
+│   │   ├── prompt.py             # LLM 提示词模板
+│   │   └── state.py              # 图状态类型定义
+│   ├── agent_v2/                 # v2: 动态路由版本（Command 模式）
+│   │   ├── graph.py              # LangGraph 图构建（仅 START → retrieve）
+│   │   ├── node.py               # 节点函数 + 路由决策（Command(goto=...)）
+│   │   ├── prompt.py             # LLM 提示词模板
+│   │   └── state.py              # 图状态类型定义
 │   ├── vector/
 │   │   ├── vector_store.py       # ChromaDB 向量存储封装
 │   │   └── document_loader.py    # Markdown 文档加载与分块
