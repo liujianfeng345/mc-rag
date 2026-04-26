@@ -10,11 +10,13 @@ from ..utils.config import (
 )
 from .state import RAGState, DocumentRelevance
 from .prompt import GRADE_PROMPT, SYSTEM_PROMPT, REWRITE_PROMPT
+from ..vector.vector_store import VectorStore
 
 from langchain_deepseek import ChatDeepSeek
 from langchain.messages import (
     HumanMessage,
     SystemMessage,
+    AIMessage,
 )
 
 
@@ -34,20 +36,13 @@ def create_llm(
     return llm
 
 
-async def retrieve_node(state: RAGState, vector_store) -> dict:
+async def retrieve_node(state: RAGState, vector_store: VectorStore) -> dict:
     """
     检索节点：根据用户问题从向量数据库检索相关文档。
 
     首次检索使用原始问题；重写后使用重写的问题。
     """
-    question = state["question"]
-
-    # 如果有历史重写，使用最后一条 HumanMessage 作为查询
-    if state.get("messages"):
-        for msg in reversed(state["messages"]):
-            if isinstance(msg, HumanMessage):
-                question = msg.content
-                break
+    question = state['current_query'] if state.get('current_query') else state["question"]
 
     documents = await vector_store.search(question, top_k=RETRIEVAL_TOP_K)
 
@@ -62,7 +57,7 @@ async def grade_node(state: RAGState) -> dict:
 
     使用 LLM 对每个文档片段逐一评分，只有"相关"的文档才会进入生成阶段。
     """
-    question = state["question"]
+    question = state['current_query'] if state.get('current_query') else state["question"]
     documents = state.get("documents", [])
 
     if not documents:
@@ -80,12 +75,12 @@ async def grade_node(state: RAGState) -> dict:
         response: DocumentRelevance = await llm_structured.ainvoke(
             [HumanMessage(content=prompt)]
         )
-        grade = response.relevant
+        try:
+            grade = response.relevant
+        except:
+            grade = "相关"
         if grade == "相关":
             relevant_docs.append(doc)
-
-    if not relevant_docs:
-        relevant_docs = documents
 
     return {
         "documents": relevant_docs,
@@ -127,6 +122,7 @@ async def generate_node(state: RAGState) -> dict:
 
     return {
         "generation": full_content,
+        "messages": [AIMessage(content=full_content)]
     }
 
 
@@ -149,4 +145,5 @@ async def rewrite_node(state: RAGState) -> dict:
     return {
         "messages": [HumanMessage(content=rewritten)],
         "rewrite_count": rewrite_count,
+        "current_query": rewritten,
     }

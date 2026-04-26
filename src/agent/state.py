@@ -13,6 +13,7 @@ class RAGState(TypedDict):
 
     messages:    对话历史（自动合并同角色消息）
     question:    当前用户问题
+    current_query: 改写后的问题
     documents:   检索到的文档列表
     generation:  生成的答案
     rewrite_count: 重写次数（防止无限循环）
@@ -20,9 +21,10 @@ class RAGState(TypedDict):
 
     messages: Annotated[list, add_messages]
     question: str
+    current_query: str = ""
     documents: list[Document] | None
     generation: str | None
-    rewrite_count: int
+    rewrite_count: int = 0
 
 
 class DocumentRelevance(BaseModel):

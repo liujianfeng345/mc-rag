@@ -11,6 +11,7 @@ from .node import (
     generate_node,
     rewrite_node,
 )
+from ..vector.vector_store import VectorStore
 
 
 # =============================================================================
@@ -41,7 +42,7 @@ def grade_router(state: RAGState) -> Literal["generate", "rewrite"]:
 # =============================================================================
 # 图构建
 # =============================================================================
-def build_rag_graph(vector_store) -> StateGraph:
+def build_rag_graph(vector_store: VectorStore = None) -> StateGraph:
     """
     构建 Agentic RAG 图。
 
@@ -56,6 +57,9 @@ def build_rag_graph(vector_store) -> StateGraph:
         graph = build_rag_graph(store)
         result = graph.invoke({"question": "如何自定义物品？"})
     """
+
+    if vector_store is None:
+        vector_store = VectorStore()
 
     # 创建图
     workflow = StateGraph(RAGState)
