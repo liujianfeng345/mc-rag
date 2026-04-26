@@ -12,6 +12,7 @@ Minecraft 开发者文档 Agentic RAG 问答系统。
 - **DeepSeek API** — 大语言模型（OpenAI 兼容接口）
 - **ChromaDB** — 向量数据库（文档检索）
 - **HuggingFace Embeddings** — 本地嵌入模型（多语言，支持中文）
+- **LangSmith** — LLM 可观测性追踪
 - **Rich** — 终端交互界面
 
 ## 架构
@@ -148,6 +149,11 @@ CHUNK_OVERLAP=200
 
 # 向量数据库配置
 VECTOR_DB_DIR=./chroma_db
+
+# LangSmith 追踪配置（可选，默认关闭）
+LANGCHAIN_TRACING_V2=false
+LANGCHAIN_API_KEY=your_langsmith_api_key_here
+LANGCHAIN_PROJECT=mc-rag
 ```
 
 ### 使用
@@ -164,6 +170,9 @@ AGENT_VERSION=v2 uv run python -m src.main ask "如何自定义物品？"
 
 # 4. 交互式问答
 uv run python -m src.main demo
+
+# 5. 启动 LangGraph API Server（LangSmith 平台 / 自托管）
+uv run langgraph dev
 ```
 
 ## 项目结构
@@ -171,6 +180,8 @@ uv run python -m src.main demo
 ```
 mc-rag/
 ├── main.py                  # 根入口（占位）
+├── graph_server.py          # LangGraph API Server 图加载入口
+├── langgraph.json           # LangGraph Server 配置文件
 ├── pyproject.toml           # 项目元数据与依赖
 ├── .env                     # 环境变量（不提交）
 ├── .env.example             # 环境变量模板
