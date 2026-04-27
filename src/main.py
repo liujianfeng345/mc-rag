@@ -34,7 +34,9 @@ if os.getenv("LANGCHAIN_TRACING_V2", "false").lower() == "true":
         pass
 
 AGENT_VERSION = os.getenv("AGENT_VERSION", "v1")
-if AGENT_VERSION == "v3":
+if AGENT_VERSION == "v4":
+    from .agent_v4.graph import build_rag_graph
+elif AGENT_VERSION == "v3":
     from .agent_v3.graph import build_rag_graph
 elif AGENT_VERSION == "v2":
     from .agent_v2.graph import build_rag_graph
@@ -95,7 +97,7 @@ async def cmd_ask(question: str):
 
     # 使用 astream_events 实现流式 token 输出
     input_state = {"question": question}
-    if AGENT_VERSION != "v3":
+    if AGENT_VERSION in ("v1", "v2"):
         input_state["rewrite_count"] = 0
     async for event in graph.astream_events(input_state, version="v2"):
         kind = event["event"]
@@ -167,7 +169,7 @@ async def cmd_demo():
             {
                 "question": question,
                 "messages": session_messages,
-                **({"rewrite_count": 0} if AGENT_VERSION != "v3" else {}),
+                **({"rewrite_count": 0} if AGENT_VERSION in ("v1", "v2") else {}),
             },
             version="v2",
         ):

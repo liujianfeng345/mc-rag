@@ -38,6 +38,12 @@ RETRIEVAL_TOP_K = int(os.getenv("RETRIEVAL_TOP_K", "5"))
 BM25_TOP_K = int(os.getenv("BM25_TOP_K", "5"))   # BM25 关键词检索返回数量
 RRF_K = int(os.getenv("RRF_K", "60"))             # RRF 重排序平滑参数
 
+# =============================================================================
+# v4 Self-Corrective RAG 配置
+# =============================================================================
+MAX_REFINE_ITERATIONS = int(os.getenv("MAX_REFINE_ITERATIONS", "2"))  # 最大精炼循环次数
+REFLECT_TEMPERATURE = float(os.getenv("REFLECT_TEMPERATURE", "0.0"))  # 反思节点 LLM 温度
+
 
 # =============================================================================
 # 嵌入模型配置
