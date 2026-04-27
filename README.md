@@ -18,7 +18,7 @@ Minecraft 开发者文档 Agentic RAG 问答系统。
 
 ## 架构
 
-项目提供两种 Agent 版本，可通过 `AGENT_VERSION` 环境变量切换（默认 v1）。
+项目提供三种 Agent 版本，可通过 `AGENT_VERSION` 环境变量切换（默认 v1）。
 
 ### v1（静态路由）— `src/agent/`
 
@@ -85,16 +85,51 @@ Minecraft 开发者文档 Agentic RAG 问答系统。
                     END
 ```
 
+### v3（深度研究）— `src/agent_v3/`
+
+采用问题分解 + 并行 ReAct 研究员架构。先将用户问题分解为 2-4 个子问题，每个子问题由独立研究员在 ReAct 循环中自主进行多轮检索，最终汇总所有研究发现生成结构化回答。
+
+```
+                    ┌──────────────────────────────────────┐
+                    │               START                  │
+                    └──────────┬───────────────────────────┘
+                               │
+                    ┌──────────▼──────────┐
+                    │     decompose       │  LLM 分解问题 → 子问题列表
+                    └──────────┬──────────┘
+                               │
+                    ┌──────────▼──────────┐
+                    │   research_batch    │  并行 ReAct 研究员
+                    │  ┌────────────────┐ │
+                    │  │ 研究员1 (ReAct) │ │  多轮检索 + 思考
+                    │  │ 研究员2 (ReAct) │ │
+                    │  │ 研究员3 (ReAct) │ │
+                    │  └────────────────┘ │
+                    └──────────┬──────────┘
+                               │
+                    ┌──────────▼──────────┐
+                    │    synthesize       │  汇总研究发现，生成结构化答案
+                    └──────────┬──────────┘
+                               │
+                    ┌──────────▼──────────┐
+                    │        END          │
+                    └─────────────────────┘
+```
+
 ### 版本对比
 
-| 特性 | v1（`src/agent/`） | v2（`src/agent_v2/`） |
-|---|---|---|
-| 路由方式 | 集中式：`grade_router` 函数 + `add_conditional_edges` | 分散式：节点内 `Command(goto=...)` |
-| 图结构 | 静态边 + 条件边 | 仅 START → retrieve 一条边 |
-| 可扩展性 | 新增节点需修改路由函数 | 新增节点只需在节点内指定跳转 |
-| 职责划分 | graph 控制流，node 纯逻辑 | graph 极简，node 同时负责路由决策 |
+| 特性 | v1（`src/agent/`） | v2（`src/agent_v2/`） | v3（`src/agent_v3/`） |
+|---|---|---|---|---|
+| 路由方式 | 集中式：`grade_router` + 条件边 | 分散式：节点内 `Command(goto=...)` | 线性管道：固定顺序，无分支 |
+| 图结构 | 静态边 + 条件边 | 仅 START → retrieve 一条边 | START → decompose → research_batch → synthesize → END |
+| 检索策略 | 单次混合检索 + LLM 评分过滤 | 单次混合检索 + LLM 评分过滤 | 多轮、多角度 ReAct 自主检索，无需显式评分 |
+| 查询重写 | 图级别循环重写（最多 2 次） | 图级别循环重写（最多 2 次） | 问题分解替代重写，研究员自主调整检索角度 |
+| 并行能力 | 文档评分并行 | 文档评分并行 | 子问题级别并行研究 |
+| 适用场景 | 简单事实查询 | 简单事实查询 | 复杂、多方面的技术问题 |
 
 ### 工作流节点
+
+#### v1 / v2 共用节点
 
 | 节点 | 功能 |
 |---|---|
@@ -102,6 +137,14 @@ Minecraft 开发者文档 Agentic RAG 问答系统。
 | `grade` | 用 LLM 逐篇评估文档相关性，过滤无关文档 |
 | `generate` | 基于相关文档生成带引用来源的答案 |
 | `rewrite` | 优化用户查询并重新检索（最多 2 次） |
+
+#### v3 专属节点
+
+| 节点 | 功能 |
+|---|---|
+| `decompose` | LLM 将用户问题分解为 2-4 个独立子问题 |
+| `research_batch` | 并行启动多个 ReAct 研究员，每个研究员自主进行多轮检索与思考 |
+| `synthesize` | 汇总所有研究发现，生成结构化、带来源引用的最终回答 |
 
 ## 快速开始
 
@@ -140,7 +183,7 @@ DEEPSEEK_BASE_URL=https://api.deepseek.com/v1
 LLM_MODEL=deepseek-chat
 EMBEDDING_MODEL=sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
 
-# Agent 版本（v1: 静态路由, v2: 动态路由）
+# Agent 版本（v1: 静态路由, v2: 动态路由, v3: 深度研究）
 AGENT_VERSION=v1
 
 # 文档配置
@@ -173,10 +216,13 @@ uv run python -m src.main ask "如何自定义物品？"
 # 3. 使用 v2 动态路由版本
 AGENT_VERSION=v2 uv run python -m src.main ask "如何自定义物品？"
 
-# 4. 交互式问答
+# 4. 使用 v3 深度研究版本（适合复杂问题）
+AGENT_VERSION=v3 uv run python -m src.main ask "如何创建一个自定义生物并为其添加攻击技能？"
+
+# 5. 交互式问答
 uv run python -m src.main demo
 
-# 5. 启动 LangGraph API Server（LangSmith 平台 / 自托管）
+# 6. 启动 LangGraph API Server（LangSmith 平台 / 自托管）
 uv run langgraph dev
 ```
 
@@ -200,6 +246,11 @@ mc-rag/
 │   ├── agent_v2/                 # v2: 动态路由版本（Command 模式）
 │   │   ├── graph.py              # LangGraph 图构建（仅 START → retrieve）
 │   │   ├── node.py               # 节点函数 + 路由决策（Command(goto=...)）
+│   │   ├── prompt.py             # LLM 提示词模板
+│   │   └── state.py              # 图状态类型定义
+│   ├── agent_v3/                 # v3: 深度研究版本（问题分解 + ReAct 研究员）
+│   │   ├── graph.py              # LangGraph 图构建（线性管道）
+│   │   ├── node.py               # 节点函数：decompose / research_batch / synthesize
 │   │   ├── prompt.py             # LLM 提示词模板
 │   │   └── state.py              # 图状态类型定义
 │   ├── vector/

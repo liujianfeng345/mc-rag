@@ -34,7 +34,9 @@ if os.getenv("LANGCHAIN_TRACING_V2", "false").lower() == "true":
         pass
 
 AGENT_VERSION = os.getenv("AGENT_VERSION", "v1")
-if AGENT_VERSION == "v2":
+if AGENT_VERSION == "v3":
+    from .agent_v3.graph import build_rag_graph
+elif AGENT_VERSION == "v2":
     from .agent_v2.graph import build_rag_graph
 else:
     from .agent.graph import build_rag_graph
@@ -92,10 +94,10 @@ async def cmd_ask(question: str):
     final_state: dict = {}
 
     # 使用 astream_events 实现流式 token 输出
-    async for event in graph.astream_events(
-        {"question": question, "rewrite_count": 0},
-        version="v2",
-    ):
+    input_state = {"question": question}
+    if AGENT_VERSION != "v3":
+        input_state["rewrite_count"] = 0
+    async for event in graph.astream_events(input_state, version="v2"):
         kind = event["event"]
 
         # 流式打印 LLM 生成的每个 token
@@ -118,8 +120,8 @@ async def cmd_ask(question: str):
         console.print("\n[bold]📄 参考文档:[/bold]")
         for doc in documents:
             source = doc.metadata.get("source", "未知")
-            score = doc.metadata.get("_score", 0)
-            console.print(f"  • {source} (相似度: {score:.3f})")
+            score = doc.metadata.get("_rrf_score") or doc.metadata.get("_score", 0)
+            console.print(f"  • {source} (相关度: {score:.3f})")
 
 
 async def cmd_demo():
@@ -165,7 +167,7 @@ async def cmd_demo():
             {
                 "question": question,
                 "messages": session_messages,
-                "rewrite_count": 0,
+                **({"rewrite_count": 0} if AGENT_VERSION != "v3" else {}),
             },
             version="v2",
         ):
