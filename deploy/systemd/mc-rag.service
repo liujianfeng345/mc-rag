@@ -1,0 +1,27 @@
+[Unit]
+Description=mc-rag Streamlit Web Service
+Documentation=https://github.com/your/mc-rag
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/opt/mc-rag
+EnvironmentFile=/opt/mc-rag/.env
+Environment="STREAMLIT_SERVER_PORT=8501"
+Environment="STREAMLIT_SERVER_ADDRESS=0.0.0.0"
+Environment="STREAMLIT_BROWSER_GATHER_USAGE_STATS=false"
+ExecStart=/root/.cargo/bin/uv run streamlit run src/web/app.py --server.fileWatcherType none
+Restart=always
+RestartSec=10
+
+# 日志
+StandardOutput=journal
+StandardError=journal
+
+# 安全加固
+NoNewPrivileges=yes
+PrivateTmp=yes
+
+[Install]
+WantedBy=multi-user.target

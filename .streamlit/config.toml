@@ -1,0 +1,15 @@
+# Streamlit 配置文件
+# fileWatcherType = "none" 禁用文件监视器
+# 避免 transformers zoedepth 模块懒加载触发 torchvision 缺失导致的 ModuleNotFoundError
+
+[server]
+fileWatcherType = "none"
+
+# 服务器配置
+port = 8501
+# 部署时取消注释:
+# address = "0.0.0.0"
+
+[browser]
+# 关闭自动打开浏览器
+gatherUsageStats = false
