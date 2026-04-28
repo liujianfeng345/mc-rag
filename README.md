@@ -18,7 +18,7 @@ Minecraft 开发者文档 Agentic RAG 问答系统。
 
 ## 架构
 
-项目提供三种 Agent 版本，可通过 `AGENT_VERSION` 环境变量切换（默认 v1）。
+项目提供四种 Agent 版本，可通过 `AGENT_VERSION` 环境变量切换（默认 v1）。
 
 ### v1（静态路由）— `src/agent/`
 
@@ -116,16 +116,63 @@ Minecraft 开发者文档 Agentic RAG 问答系统。
                     └─────────────────────┘
 ```
 
+### v4（自校正 RAG）— `src/agent_v4/`
+
+在 v3 的基础上新增 **reflect（自我反思）** 和 **refine（定向精炼）** 两个节点。生成答案后由 LLM 系统性审查质量，发现事实无支撑或覆盖有缺口时，触发补充检索与答案修订，循环直至答案达标或达到上限。
+
+```
+                    ┌──────────────────────────────────────┐
+                    │               START                  │
+                    └──────────┬───────────────────────────┘
+                               │
+                    ┌──────────▼──────────┐
+                    │     decompose       │  LLM 分解问题 → 子问题列表
+                    └──────────┬──────────┘
+                               │
+                    ┌──────────▼──────────┐
+                    │   research_batch    │  并行 ReAct 研究员
+                    └──────────┬──────────┘
+                               │
+                    ┌──────────▼──────────┐
+                    │    synthesize       │  汇总研究发现，生成初版答案
+                    └──────────┬──────────┘
+                               │
+                    ┌──────────▼──────────┐
+                    │     reflect         │  ★ LLM 检查答案质量
+                    └──────────┬──────────┘
+                               │
+                ┌──────────────┼──────────────────┐
+                │ 答案充分      │                  │ 有缺口 且 refine_count < 2
+                ▼              │                  ▼
+              END              │           ┌──────────────┐
+                               │           │    refine    │  ★ 定向补充检索
+                               │           └──────┬───────┘
+                               │                  │
+               （refine_count ≥ 2）                │
+                               │                  ▼
+                               │            synthesize（回到 synthesize 修订答案）
+                               │                  │
+                               └──────────────────┘
+```
+
+#### v4 新增节点
+
+| 节点 | 功能 |
+|---|---|
+| `reflect` | 对 synthesize 生成的答案进行四维度质量评估（事实准确性、覆盖完整性、具体性、来源正确性），输出结构化反思结果 |
+| `refine` | 接收 reflect 的 follow_up_queries，执行定向补充检索（单轮 hybrid_search），生成补充研究发现并合并文档 |
+
 ### 版本对比
 
-| 特性 | v1（`src/agent/`） | v2（`src/agent_v2/`） | v3（`src/agent_v3/`） |
+| 特性 | v1（`src/agent/`） | v2（`src/agent_v2/`） | v3（`src/agent_v3/`） | v4（`src/agent_v4/`） |
 |---|---|---|---|---|
-| 路由方式 | 集中式：`grade_router` + 条件边 | 分散式：节点内 `Command(goto=...)` | 线性管道：固定顺序，无分支 |
-| 图结构 | 静态边 + 条件边 | 仅 START → retrieve 一条边 | START → decompose → research_batch → synthesize → END |
-| 检索策略 | 单次混合检索 + LLM 评分过滤 | 单次混合检索 + LLM 评分过滤 | 多轮、多角度 ReAct 自主检索，无需显式评分 |
-| 查询重写 | 图级别循环重写（最多 2 次） | 图级别循环重写（最多 2 次） | 问题分解替代重写，研究员自主调整检索角度 |
-| 并行能力 | 文档评分并行 | 文档评分并行 | 子问题级别并行研究 |
-| 适用场景 | 简单事实查询 | 简单事实查询 | 复杂、多方面的技术问题 |
+| 路由方式 | 集中式：`grade_router` + 条件边 | 分散式：节点内 `Command(goto=...)` | 线性管道：固定顺序，无分支 | 条件循环：reflect 后根据质量决定继续精炼或结束 |
+| 图结构 | 静态边 + 条件边 | 仅 START → retrieve 一条边 | START → decompose → research_batch → synthesize → END | v3 基础 + reflect → (refine → synthesize) 循环 |
+| 检索策略 | 单次混合检索 + LLM 评分过滤 | 单次混合检索 + LLM 评分过滤 | 多轮、多角度 ReAct 自主检索，无需显式评分 | 继承 v3 ReAct 检索 + 精炼阶段定向补充检索 |
+| 查询重写 | 图级别循环重写（最多 2 次） | 图级别循环重写（最多 2 次） | 问题分解替代重写，研究员自主调整检索角度 | 同 v3，但新增反思驱动的定向补充查询 |
+| 答案质量保证 | 无 | 无 | 无 | LLM 自我反思 + 迭代精炼（最多 2 轮） |
+| 并行能力 | 文档评分并行 | 文档评分并行 | 子问题级别并行研究 | 同 v3，补充检索也并行执行 |
+| 适用场景 | 简单事实查询 | 简单事实查询 | 复杂、多方面的技术问题 | 对答案准确性要求高的复杂技术问题 |
 
 ### 工作流节点
 
@@ -145,6 +192,13 @@ Minecraft 开发者文档 Agentic RAG 问答系统。
 | `decompose` | LLM 将用户问题分解为 2-4 个独立子问题 |
 | `research_batch` | 并行启动多个 ReAct 研究员，每个研究员自主进行多轮检索与思考 |
 | `synthesize` | 汇总所有研究发现，生成结构化、带来源引用的最终回答 |
+
+#### v4 新增节点
+
+| 节点 | 功能 |
+|---|---|
+| `reflect` | LLM 审查答案质量（事实准确性、覆盖完整性、具体性、来源正确性），输出结构化反思结果与补充检索查询 |
+| `refine` | 针对反思发现的缺口执行定向补充检索（单轮 hybrid_search），生成补充研究发现并去重合并至文档列表 |
 
 ## 快速开始
 
@@ -183,7 +237,7 @@ DEEPSEEK_BASE_URL=https://api.deepseek.com/v1
 LLM_MODEL=deepseek-chat
 EMBEDDING_MODEL=sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2
 
-# Agent 版本（v1: 静态路由, v2: 动态路由, v3: 深度研究）
+# Agent 版本（v1: 静态路由, v2: 动态路由, v3: 深度研究, v4: 自校正 RAG）
 AGENT_VERSION=v1
 
 # 文档配置
@@ -197,6 +251,10 @@ VECTOR_DB_DIR=./chroma_db
 # 混合检索参数（可选）
 BM25_TOP_K=5
 RRF_K=60
+
+# v4 自校正 RAG 参数（可选）
+MAX_REFINE_ITERATIONS=2    # 最大精炼循环次数
+REFLECT_TEMPERATURE=0.0    # 反思节点 LLM 温度（低温度保证一致评估）
 
 # LangSmith 追踪配置（可选，默认关闭）
 LANGCHAIN_TRACING_V2=false
@@ -219,10 +277,13 @@ AGENT_VERSION=v2 uv run python -m src.main ask "如何自定义物品？"
 # 4. 使用 v3 深度研究版本（适合复杂问题）
 AGENT_VERSION=v3 uv run python -m src.main ask "如何创建一个自定义生物并为其添加攻击技能？"
 
-# 5. 交互式问答
+# 5. 使用 v4 自校正 RAG 版本（带答案质量审查，适合对准确性要求高的场景）
+AGENT_VERSION=v4 uv run python -m src.main ask "如何创建一个自定义武器并设置攻击力？"
+
+# 6. 交互式问答
 uv run python -m src.main demo
 
-# 6. 启动 LangGraph API Server（LangSmith 平台 / 自托管）
+# 7. 启动 LangGraph API Server（LangSmith 平台 / 自托管）
 uv run langgraph dev
 ```
 
@@ -253,6 +314,11 @@ mc-rag/
 │   │   ├── node.py               # 节点函数：decompose / research_batch / synthesize
 │   │   ├── prompt.py             # LLM 提示词模板
 │   │   └── state.py              # 图状态类型定义
+│   ├── agent_v4/                 # v4: 自校正 RAG 版本（v3 + 反思 + 精炼循环）
+│   │   ├── graph.py              # LangGraph 图构建（条件循环：reflect → refine → synthesize）
+│   │   ├── node.py               # 节点函数：decompose / research_batch / synthesize / reflect / refine
+│   │   ├── prompt.py             # LLM 提示词模板（含反思/精炼专用提示词）
+│   │   └── state.py              # 图状态类型定义（含 v4 新增反思/精炼字段）
 │   ├── vector/
 │   │   ├── vector_store.py       # ChromaDB 向量存储封装（支持语义 + BM25 混合检索）
 │   │   └── document_loader.py    # Markdown 文档加载与分块
