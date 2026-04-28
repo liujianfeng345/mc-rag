@@ -58,15 +58,21 @@ async def stream_rag_response(
     if history:
         input_state["messages"] = history
 
+    # 最终答案生成节点名称（只捕获该节点的 token，避免其他节点 LLM 输出混入）
+    OUTPUT_NODES = {"v4": "synthesize", "v3": "synthesize", "v2": "generate", "v1": "generate"}
+    output_node = OUTPUT_NODES.get(agent_version, "generate")
+
     final_state: dict = {}
 
     async for event in graph.astream_events(input_state, version="v2"):
         kind = event["event"]
 
         if kind == "on_chat_model_stream":
-            chunk = event["data"]["chunk"]
-            if chunk.content:
-                yield {"type": "token", "content": chunk.content}
+            node = event.get("metadata", {}).get("langgraph_node", "")
+            if node == output_node:
+                chunk = event["data"]["chunk"]
+                if chunk.content:
+                    yield {"type": "token", "content": chunk.content}
 
         if kind == "on_chain_end" and isinstance(
             event.get("data", {}).get("output"), dict
