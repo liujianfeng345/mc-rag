@@ -212,21 +212,20 @@ def render_chat():
                     answer = done.get("answer", "")
                     sources = done.get("sources", [])
 
-                    # 存储消息
+                    # 将来源文档拼入消息内容，作为 markdown 持久存储
+                    # 避免单独 st.divider/st.caption 在 st.chat_message 容器中跨渲染周期错位
+                    content = answer
+                    if sources:
+                        lines = ["\n\n---\n📄 **参考文档来源:**"]
+                        for s in sources:
+                            lines.append(f"- {s['source']} (相关度: {s['score']:.3f})")
+                        content += "\n".join(lines)
+
                     st.session_state.messages.append(
-                        {"role": "assistant", "content": answer}
+                        {"role": "assistant", "content": content}
                     )
                     if done.get("history_msg"):
                         st.session_state.history.append(done["history_msg"])
-
-                    # 展示来源
-                    if sources:
-                        st.divider()
-                        st.caption("📄 参考文档来源:")
-                        cols = st.columns(min(len(sources), 3))
-                        for i, s in enumerate(sources):
-                            with cols[i % 3]:
-                                st.caption(f"{s['source']} (相关度: {s['score']:.3f})")
             except Exception as e:
                 st.error(f"生成回答时出错: {e}")
 
