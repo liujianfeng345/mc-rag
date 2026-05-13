@@ -14,6 +14,24 @@ resolution-markers = [
 ]
 
 [[package]]
+name = "ai-memory-hub"
+version = "0.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "chromadb" },
+    { name = "httpx" },
+    { name = "openai" },
+    { name = "pydantic" },
+    { name = "pydantic-settings" },
+    { name = "python-dotenv" },
+    { name = "sentence-transformers" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/f9/c7/537c3a0fea4787eed884f90bd6de59247de759dfc59be3f463a06105b872/ai_memory_hub-0.1.0.tar.gz", hash = "sha256:b2bc0d01c56073dfe34bd4e4dd28e6ad7f7d4fa93aa92a66e1e626ec1afb4c45", size = 75357, upload-time = "2026-04-30T17:42:36.35Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/5c/c0/7450492a1de1650b895f0b71858be79524d367fe0ccd589e9d89bb61cda6/ai_memory_hub-0.1.0-py3-none-any.whl", hash = "sha256:0bb9c35b614c7186b5198f32b88ea5bd073f83c117591b27ff23ae287690c898", size = 54695, upload-time = "2026-04-30T17:42:31.47Z" },
+]
+
+[[package]]
 name = "aiohappyeyeballs"
 version = "2.6.1"
 source = { registry = "https://pypi.org/simple" }
@@ -1496,6 +1514,7 @@ name = "mc-rag"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "ai-memory-hub" },
     { name = "chromadb" },
     { name = "dotenv" },
     { name = "langchain" },
@@ -1514,6 +1533,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "ai-memory-hub", specifier = ">=0.1.0" },
     { name = "chromadb", specifier = ">=1.5.8" },
     { name = "dotenv", specifier = ">=0.9.9" },
     { name = "langchain", specifier = ">=1.2.15" },

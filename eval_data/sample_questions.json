@@ -1,0 +1,63 @@
+[
+  {
+    "question": "如何创建自定义武器？",
+    "relevant_sources": [
+      "data/20-玩法开发/15-自定义武器/README.md"
+    ],
+    "golden_answer": ""
+  },
+  {
+    "question": "什么是蓝图零件？怎么创建？",
+    "relevant_sources": [
+      "data/20-玩法开发/12-可视化编程/10-新版逻辑编辑器使用说明/20-创建蓝图零件.md"
+    ],
+    "golden_answer": ""
+  },
+  {
+    "question": "界面编辑器怎么用？",
+    "relevant_sources": [
+      "data/18-界面与交互/1-界面编辑器使用说明.md"
+    ],
+    "golden_answer": ""
+  },
+  {
+    "question": "骨骼模型怎么做？用3DMAX怎么导出？",
+    "relevant_sources": [
+      "data/16-美术/6-模型和动作/02-骨骼模型制作指南（3DMAX）.md",
+      "data/16-美术/6-模型和动作/10-模型输出规范.md"
+    ],
+    "golden_answer": ""
+  },
+  {
+    "question": "特效编辑器怎么使用？怎么把特效挂到模型上？",
+    "relevant_sources": [
+      "data/16-美术/9-特效/00-特效编辑器简介.md",
+      "data/16-美术/9-特效/40-特效挂接到模型.md"
+    ],
+    "golden_answer": ""
+  },
+  {
+    "question": "资源包的文件结构是怎样的？",
+    "relevant_sources": [
+      "data/15-资源管理/10-资源包.md",
+      "data/15-资源管理/2-文件结构.md"
+    ],
+    "golden_answer": ""
+  },
+  {
+    "question": "什么是材质？怎么做材质配置？",
+    "relevant_sources": [
+      "data/16-美术/7-材质与着色器/1-材质介绍与着色器入门.md",
+      "data/16-美术/7-材质与着色器/3-材质配置说明.md"
+    ],
+    "golden_answer": ""
+  },
+  {
+    "question": "如何实现九宫格图片适配？",
+    "relevant_sources": [
+      "data/18-界面与交互/11-图片缩放适配与九宫切图.md",
+      "data/16-美术/50-贴图规范及九宫格使用.md"
+    ],
+    "golden_answer": ""
+  }
+]

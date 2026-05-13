@@ -16,6 +16,7 @@ description = "Minecraft RAG 系统"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+    "ai-memory-hub>=0.1.0",
     "chromadb>=1.5.8",
     "dotenv>=0.9.9",
     "langchain>=1.2.15",

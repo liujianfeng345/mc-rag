@@ -202,6 +202,18 @@ async def cmd_demo():
 # =============================================================================
 # CLI
 # =============================================================================
+async def cmd_eval(dataset_path: str, retrieval_only: bool, ragas_only: bool, save_report: str):
+    """执行 RAG 评测（检索质量 + 生成质量）"""
+    from .eval.runner import run_eval
+
+    await run_eval(
+        dataset_path=dataset_path,
+        retrieval_only=retrieval_only,
+        ragas_only=ragas_only,
+        save_report_path=save_report,
+    )
+
+
 async def main():
     parser = argparse.ArgumentParser(
         prog="mc-rag",
@@ -219,6 +231,29 @@ async def main():
     # demo
     subparsers.add_parser("demo", help="交互式问答")
 
+    # eval
+    eval_parser = subparsers.add_parser("eval", help="RAG 系统评测")
+    eval_parser.add_argument(
+        "--dataset", "-d",
+        required=True,
+        help="评测数据集 JSON 文件路径",
+    )
+    eval_parser.add_argument(
+        "--retrieval-only",
+        action="store_true",
+        help="仅评测检索质量（需要数据集中有 relevant_sources 标注）",
+    )
+    eval_parser.add_argument(
+        "--ragas-only",
+        action="store_true",
+        help="仅评测生成质量（LLM 裁判）",
+    )
+    eval_parser.add_argument(
+        "--save-report", "-o",
+        default="",
+        help="评测报告保存路径（JSON 格式）",
+    )
+
     args = parser.parse_args()
 
     if args.command == "build":
@@ -227,6 +262,8 @@ async def main():
         await cmd_ask(args.question)
     elif args.command == "demo":
         await cmd_demo()
+    elif args.command == "eval":
+        await cmd_eval(args.dataset, args.retrieval_only, args.ragas_only, args.save_report)
     else:
         parser.print_help()
 
