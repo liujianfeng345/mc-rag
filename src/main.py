@@ -202,7 +202,7 @@ async def cmd_demo():
 # =============================================================================
 # CLI
 # =============================================================================
-async def cmd_eval(dataset_path: str, retrieval_only: bool, ragas_only: bool, save_report: str):
+async def cmd_eval(dataset_path: str, retrieval_only: bool, ragas_only: bool, auto_retrieval: bool, save_report: str):
     """执行 RAG 评测（检索质量 + 生成质量）"""
     from .eval.runner import run_eval
 
@@ -210,6 +210,7 @@ async def cmd_eval(dataset_path: str, retrieval_only: bool, ragas_only: bool, sa
         dataset_path=dataset_path,
         retrieval_only=retrieval_only,
         ragas_only=ragas_only,
+        auto_retrieval=auto_retrieval,
         save_report_path=save_report,
     )
 
@@ -241,12 +242,18 @@ async def main():
     eval_parser.add_argument(
         "--retrieval-only",
         action="store_true",
-        help="仅评测检索质量（需要数据集中有 relevant_sources 标注）",
+        help="仅评测检索质量",
     )
     eval_parser.add_argument(
         "--ragas-only",
         action="store_true",
-        help="仅评测生成质量（LLM 裁判）",
+        help="仅评测生成质量（LLM 裁判，无需标注）",
+    )
+    eval_parser.add_argument(
+        "--auto",
+        action="store_true",
+        dest="auto_retrieval",
+        help="检索评测使用 LLM 自动判断相关性（无需人工标注 relevant_sources）",
     )
     eval_parser.add_argument(
         "--save-report", "-o",
@@ -263,7 +270,7 @@ async def main():
     elif args.command == "demo":
         await cmd_demo()
     elif args.command == "eval":
-        await cmd_eval(args.dataset, args.retrieval_only, args.ragas_only, args.save_report)
+        await cmd_eval(args.dataset, args.retrieval_only, args.ragas_only, args.auto_retrieval, args.save_report)
     else:
         parser.print_help()
 

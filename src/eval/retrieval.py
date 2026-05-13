@@ -8,28 +8,57 @@
 - NDCG@K：带位置权重的排序质量（关心"排序对不对"）
 - Hit@K：前 K 个结果中是否至少命中一个相关文档
 
+两种评测模式：
+1. evaluate()：使用人工标注 relevant_sources，精确但需手动标注
+2. evaluate_auto()：使用 LLM 自动判断检索结果相关性，无需标注，适合快速对比
+
 使用方式：
     from src.eval.retrieval import RetrievalEvaluator
     from src.vector.vector_store import VectorStore
 
     store = VectorStore()
     evaluator = RetrievalEvaluator(store)
+
+    # 精确评测（需标注）
     result = await evaluator.evaluate(dataset, k=5)
-    print(result.summary())
+
+    # 自动评测（无需标注，LLM 裁判）
+    result = await evaluator.evaluate_auto(dataset, k=5)
 """
 
 import asyncio
+import json
 import math
+import re
 from collections import defaultdict
 from dataclasses import dataclass, field
 from typing import Optional
 
+from langchain_core.messages import SystemMessage, HumanMessage
+from langchain_openai import ChatOpenAI
 from rich.console import Console
 from rich.table import Table
 from rich.panel import Panel
 
 from .dataset import EvalDataset, EvalItem
 from ..vector.vector_store import VectorStore
+from ..utils.config import DEEPSEEK_API_KEY, DEEPSEEK_BASE_URL, LLM_MODEL
+
+
+# 检索结果相关性判断 prompt
+RELEVANCE_JUDGE_PROMPT = """你的任务是判断一个"检索到的文档片段"是否与用户问题相关，能否帮助回答这个问题。
+
+判断标准：
+- 相关（YES）：文档内容包含能回答问题的信息，或者与问题主题直接相关
+- 不相关（NO）：文档内容与问题无关，或者只提到了关键词但不涉及实质性内容
+
+用户问题：{question}
+
+检索到的文档片段（来源: {source}）：
+{content}
+
+请回答 YES 或 NO，并简要说明理由。用 JSON 格式输出：
+{{"verdict": "YES/NO", "reason": "简短理由"}}"""
 
 
 @dataclass
@@ -254,6 +283,179 @@ class RetrievalEvaluator:
             retrieved_sources=retrieved_sources[:max(k_values)],
             relevant_sources=list(relevant_set),
         )
+
+    async def evaluate_auto(
+        self,
+        dataset: EvalDataset,
+        k_values: list[int] = None,
+        verbose: bool = True,
+    ) -> EvalResult:
+        """
+        无标注检索评测 —— 用 LLM 自动判断每个检索结果是否与问题相关。
+
+        数据集只需要 question 字段，不依赖 relevant_sources 标注。
+        LLM 裁判的准确性不如人工标注，但用于横向对比（如 v1 vs v4）足够可靠。
+
+        使用方式：
+            dataset = EvalDataset.from_json("my_questions.json")  # 只需要 question
+            result = await evaluator.evaluate_auto(dataset)
+        """
+        k_values = k_values or [3, 5, 10]
+        console = Console() if verbose else None
+
+        # 评测专用 LLM（temperature=0 保证裁判一致性）
+        judge_llm = ChatOpenAI(
+            model=LLM_MODEL,
+            api_key=DEEPSEEK_API_KEY,
+            base_url=DEEPSEEK_BASE_URL,
+            temperature=0.0,
+            max_tokens=512,
+        )
+
+        all_metrics: list[RetrievalMetrics] = []
+
+        for idx, item in enumerate(dataset.items):
+            if console:
+                console.print(f"[dim][{idx + 1}/{len(dataset)}] 检索并评测: {item.question[:80]}...[/dim]")
+
+            # 执行混合检索
+            docs = await self.store.hybrid_search(item.question, top_k=max(k_values))
+
+            retrieved_sources = []
+            judge_tasks = []
+
+            for doc in docs:
+                source = doc.metadata.get("source", "未知")
+                chunk_idx = doc.metadata.get("chunk_index", 0)
+                source_id = f"{source}#{chunk_idx}"
+                retrieved_sources.append(source_id)
+
+                # 构造 LLM 裁判请求
+                judge_tasks.append(
+                    judge_llm.ainvoke([
+                        HumanMessage(content=RELEVANCE_JUDGE_PROMPT.format(
+                            question=item.question,
+                            source=source,
+                            content=doc.page_content[:2000],  # 截断长文档
+                        ))
+                    ])
+                )
+
+            # 并行判断所有检索结果的相关性
+            judge_results = await asyncio.gather(*judge_tasks, return_exceptions=True)
+
+            # 收集 LLM 判定为相关的文档源
+            auto_relevant = []
+            for i, result in enumerate(judge_results):
+                if isinstance(result, Exception):
+                    continue
+                try:
+                    verdict = self._parse_judge_verdict(result.content)
+                    if verdict == "YES":
+                        auto_relevant.append(retrieved_sources[i])
+                except Exception:
+                    continue
+
+            # 用 LLM 判定结果作为弱标注计算指标
+            metrics = self._compute_metrics_auto(
+                question=item.question,
+                retrieved_sources=retrieved_sources,
+                auto_relevant=auto_relevant,
+                k_values=k_values,
+            )
+            all_metrics.append(metrics)
+
+            if console:
+                self._print_item_progress(console, idx + 1, len(dataset), item.question, metrics)
+
+        result = EvalResult(
+            dataset_name=dataset.name,
+            metrics=all_metrics,
+            k_values=k_values,
+        )
+
+        if console:
+            console.print()
+            console.print("[dim]⚠ LLM 自动标注模式：相关性由 LLM 判定，指标供横向对比参考，非绝对精度[/dim]")
+            console.print(result.rich_table())
+
+        return result
+
+    def _compute_metrics_auto(
+        self,
+        question: str,
+        retrieved_sources: list[str],
+        auto_relevant: list[str],
+        k_values: list[int],
+    ) -> RetrievalMetrics:
+        """计算基于 LLM 自动标注的检索指标，逻辑与 _compute_metrics 一致。"""
+        relevant_set = set(auto_relevant)
+
+        def _is_relevant(source_str: str) -> bool:
+            return source_str in relevant_set
+
+        # Recall@K & Precision@K & Hit@K
+        recall_at_k: dict[int, float] = {}
+        precision_at_k: dict[int, float] = {}
+        hit_at_k: dict[int, bool] = {}
+
+        for k in k_values:
+            top_k = retrieved_sources[:k]
+            hits = sum(1 for s in top_k if _is_relevant(s))
+            recall_at_k[k] = hits / len(relevant_set) if relevant_set else 0.0
+            precision_at_k[k] = hits / k
+            hit_at_k[k] = hits > 0
+
+        # MRR
+        mrr = 0.0
+        for rank, source in enumerate(retrieved_sources):
+            if _is_relevant(source):
+                mrr = 1.0 / (rank + 1)
+                break
+
+        # NDCG@K
+        ndcg_at_k: dict[int, float] = {}
+        for k in k_values:
+            top_k = retrieved_sources[:k]
+            dcg = 0.0
+            for i, source in enumerate(top_k):
+                rel = 1.0 if _is_relevant(source) else 0.0
+                dcg += rel / math.log2(i + 2)
+
+            idcg = 0.0
+            ideal_hits = min(k, len(relevant_set))
+            for i in range(ideal_hits):
+                idcg += 1.0 / math.log2(i + 2)
+
+            ndcg_at_k[k] = dcg / idcg if idcg > 0 else 0.0
+
+        return RetrievalMetrics(
+            question=question,
+            recall_at_k=recall_at_k,
+            precision_at_k=precision_at_k,
+            mrr=mrr,
+            ndcg_at_k=ndcg_at_k,
+            hit_at_k=hit_at_k,
+            retrieved_sources=retrieved_sources[:max(k_values)],
+            relevant_sources=list(relevant_set),
+        )
+
+    @staticmethod
+    def _parse_judge_verdict(text: str) -> str:
+        """从 LLM 输出中解析相关性判定结果。"""
+        if not text:
+            return "NO"
+        text = text.strip()
+        text = re.sub(r'^```(?:json)?\s*\n?', '', text)
+        text = re.sub(r'\n?```$', '', text)
+        try:
+            result = json.loads(text)
+            return result.get("verdict", "NO") if isinstance(result, dict) else "NO"
+        except json.JSONDecodeError:
+            # 退化情况：直接在文本中搜索 YES/NO
+            if "YES" in text.upper():
+                return "YES"
+            return "NO"
 
     def _print_item_progress(
         self,

@@ -1,0 +1,152 @@
+[
+  {
+    "question": "什么是分帧，它主要解决什么问题？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  },
+  {
+    "question": "如何在 Minecraft 开发中通过分帧来避免游戏卡顿？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  },
+  {
+    "question": "分帧技术中，如何配置每帧处理的任务量上限？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  },
+  {
+    "question": "什么是分帧处理，为什么在修改大量方块时需要用到它？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  },
+  {
+    "question": "如何将一段批量修改方块的代码从一次性执行改为分帧处理？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  },
+  {
+    "question": "在正确写法的示例中，`self.posIndex` 变量有什么作用，它应该在哪里被更新？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  },
+  {
+    "question": "这段代码中的Update函数是做什么用的？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  },
+  {
+    "question": "如何修改代码让每帧处理10个方块而不是5个？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  },
+  {
+    "question": "在SetBlockNew方法中，{'name':'minecraft:air'}这个参数代表什么含义？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  },
+  {
+    "question": "什么是非重要逻辑降帧处理，为什么在 Minecraft 开发中推荐使用它？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  },
+  {
+    "question": "如何在代码中实现非重要逻辑的降帧处理，比如让某个次要逻辑每5帧执行一次？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  },
+  {
+    "question": "在少用轮询逻辑的建议中，如果我想删除一个实体但担心它未被加载，应该使用什么配置或接口来避免每帧尝试？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  },
+  {
+    "question": "什么是MOD程序优化方案？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  },
+  {
+    "question": "如何根据文档中的建议来提升游戏的平均帧率？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  },
+  {
+    "question": "文档中提到的优化方案主要针对哪些开发中的常见问题？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  },
+  {
+    "question": "什么是Shader优化，它为什么对Minecraft的性能很重要？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  },
+  {
+    "question": "如何通过优化Shader来让低配置的玩家也能流畅运行光影MOD？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  },
+  {
+    "question": "在Minecraft中自定义Shader时，有哪些关键的配置参数会影响GPU性能？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  },
+  {
+    "question": "什么是 step 函数，它的作用是什么？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  },
+  {
+    "question": "如何用 step 函数替换 if else 语句来实现条件赋值？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  },
+  {
+    "question": "在 step(a, b) 函数中，参数 a 和 b 分别代表什么？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  },
+  {
+    "question": "卡通着色中，step函数的作用是什么？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  },
+  {
+    "question": "如何实现一个简单的卡通着色效果，将连续的颜色值映射到离散值？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  },
+  {
+    "question": "在getNewRedColor函数中，如果输入r=0.4，返回的newR值是多少？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  },
+  {
+    "question": "在Minecraft开发中，循环语句的并行性为什么比较低？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  },
+  {
+    "question": "如何在Minecraft开发中正确初始化循环变量以避免玩家卡顿？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  },
+  {
+    "question": "在Minecraft开发中，如果必须使用循环，应该注意哪些配置参数或性能优化建议？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  },
+  {
+    "question": "什么是精美贴图开关，它在游戏中的什么位置？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  },
+  {
+    "question": "如何根据玩家是否开启精美贴图来执行不同的shader逻辑？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  },
+  {
+    "question": "在fancy.json中，+defines参数的作用是什么？",
+    "relevant_sources": [],
+    "golden_answer": ""
+  }
+]

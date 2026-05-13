@@ -1,10 +1,11 @@
 """
 统一评测入口，整合检索评测与生成质量评测。
 
-提供三种评测模式：
-1. --retrieval-only  仅评测检索质量（需要 relevant_sources 标注）
-2. --ragas-only      仅评测生成质量（使用 LLM 裁判）
-3. 默认              同时执行检索评测和生成质量评测
+评测模式：
+1. --retrieval-only          仅评测检索质量（默认需标注，加 --auto 用 LLM 自动判定）
+2. --ragas-only              仅评测生成质量（LLM 裁判，无需标注）
+3. 默认                      同时执行检索评测和生成质量评测
+4. --auto                    检索评测使用 LLM 自动判定相关性（无需人工标注 relevant_sources）
 """
 
 import asyncio
@@ -30,14 +31,20 @@ class FullEvalReport:
     retrieval_result: RetrievalResult | None = None
     ragas_result: RAGASResult | None = None
     elapsed_seconds: float = 0.0
+    retrieval_mode: str = ""  # "human" 或 "auto"
 
     def print(self, console: Console | None = None) -> None:
         console = console or Console()
 
+        mode_note = ""
+        if self.retrieval_mode == "auto":
+            mode_note = "\n[dim]（检索评测使用 LLM 自动标注模式）[/dim]"
+
         console.print(Panel(
             f"[bold]RAG 评测报告[/bold]\n"
             f"数据集: {self.dataset_name}\n"
-            f"耗时: {self.elapsed_seconds:.1f}s",
+            f"耗时: {self.elapsed_seconds:.1f}s"
+            f"{mode_note}",
             border_style="cyan",
         ))
 
@@ -52,6 +59,7 @@ class FullEvalReport:
         report = {
             "dataset_name": self.dataset_name,
             "elapsed_seconds": self.elapsed_seconds,
+            "retrieval_mode": self.retrieval_mode,
         }
 
         if self.retrieval_result:
@@ -97,6 +105,7 @@ async def run_eval(
     dataset_path: str,
     retrieval_only: bool = False,
     ragas_only: bool = False,
+    auto_retrieval: bool = False,
     k_values: list[int] = None,
     save_report_path: str = "",
 ) -> FullEvalReport:
@@ -106,11 +115,9 @@ async def run_eval(
         dataset_path: 评测数据集 JSON 文件路径
         retrieval_only: 仅执行检索评测
         ragas_only: 仅执行生成质量评测
+        auto_retrieval: 检索评测使用 LLM 自动判定（无需人工标注）
         k_values: 检索评测的 K 值列表
         save_report_path: 报告保存路径（JSON）
-
-    返回：
-        FullEvalReport: 完整评测报告
     """
     console = Console()
     start_time = time.time()
@@ -127,22 +134,50 @@ async def run_eval(
     store_stats = await store.stats()
     console.print(f"  知识库文档块: {store_stats['文档块数量']}\n")
 
-    report = FullEvalReport(dataset_name=dataset.name)
+    # 检索评测决策逻辑：
+    # - 如果用户指定 --ragas-only，跳过检索
+    # - 如果数据集有标注 且 没指定 --auto，用精确评测
+    # - 如果数据集无标注 或 指定 --auto，用 LLM 自动评测
+    # - 如果数据集无标注 且 没指定 --auto 且 没指定 --retrieval-only，跳过检索（默认行为）
+    do_retrieval = not ragas_only
+    if retrieval_only and not dataset.has_relevance_labels and not auto_retrieval:
+        console.print(
+            "[yellow]⚠ 数据集没有 relevant_sources 标注，且未指定 --auto 模式[/yellow]\n"
+            "[yellow]   检索评测将被跳过。如需自动评测，请使用: --retrieval-only --auto[/yellow]\n"
+        )
+        do_retrieval = False
 
-    do_retrieval = not ragas_only and dataset.has_relevance_labels
-    do_ragas = not retrieval_only
+    use_auto = auto_retrieval or (do_retrieval and not dataset.has_relevance_labels)
+
+    do_ragas = not retrieval_only or (retrieval_only and not do_retrieval and not use_auto)
+    # 修正：如果只做检索，不做 ragas
+    if retrieval_only and do_retrieval:
+        do_ragas = False
+
+    report = FullEvalReport(dataset_name=dataset.name)
 
     # 检索评测
     if do_retrieval:
-        console.print("[bold cyan]━━━ 检索质量评测 ━━━[/bold cyan]")
         retrieval_eval = RetrievalEvaluator(store)
-        report.retrieval_result = await retrieval_eval.evaluate(
-            dataset, k_values=k_values
-        )
+        if use_auto:
+            console.print("[bold cyan]━━━ 检索质量评测（LLM 自动标注模式）━━━[/bold cyan]")
+            console.print("[dim]使用 LLM 自动判断每个检索结果与问题的相关性，无需人工标注[/dim]")
+            report.retrieval_mode = "auto"
+            report.retrieval_result = await retrieval_eval.evaluate_auto(
+                dataset, k_values=k_values
+            )
+        else:
+            console.print("[bold cyan]━━━ 检索质量评测（人工标注模式）━━━[/bold cyan]")
+            report.retrieval_mode = "human"
+            report.retrieval_result = await retrieval_eval.evaluate(
+                dataset, k_values=k_values
+            )
 
     # 生成质量评测
     if do_ragas:
-        console.print("\n[bold cyan]━━━ 生成质量评测（LLM 裁判）━━━[/bold cyan]")
+        if not do_retrieval:
+            console.print()
+        console.print("[bold cyan]━━━ 生成质量评测（LLM 裁判）━━━[/bold cyan]")
         console.print("[dim]提示：评测过程需要调用 LLM，数据集越大耗时越长[/dim]")
         ragas_eval = RAGASEvaluator(store)
         report.ragas_result = await ragas_eval.evaluate(dataset)
