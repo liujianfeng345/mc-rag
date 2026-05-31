@@ -1,0 +1,277 @@
+[
+  {
+    "question": "如何注册一个自定义基础物品？需要哪些步骤？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"],
+    "golden_answer": "在behavior中新建netease_items_beh目录，创建JSON定义物品（包含identifier和至少一个component）；在resource包中将贴图放到textures/items，新建item_texture.json配置贴图映射；在resource中新建netease_items_res文件夹配置物品表现属性；在texts/zh_CN.lang中配置中文名称。identifier需全局唯一，由小写字母和下划线组成。"
+  },
+  {
+    "question": "自定义物品的identifier命名有什么要求？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"],
+    "golden_answer": "identifier分为命名空间及物品名，命名空间推荐与mod名称一致，必须全局唯一。identifier由小写字母以及下划线组成，请勿使用大写字母。"
+  },
+  {
+    "question": "如何设置自定义物品的堆叠数量？最大可以设多少？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"],
+    "golden_answer": "使用minecraft:max_stack_size组件设置物品最大堆叠数量，注意该值不能超过64。"
+  },
+  {
+    "question": "自定义武器的netease:weapon组件包含哪些可配置字段？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/2-自定义武器及工具.md"],
+    "golden_answer": "包含type（武器类型：sword/shovel/pickaxe/hatchet/hoe）、level（挖掘等级，影响铁砧修复材料）、speed（基础挖掘速度）、attack_damage（攻击伤害）、enchantment（附魔能力）五个字段。"
+  },
+  {
+    "question": "自定义物品如何设置为可在副手使用？有什么限制？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"],
+    "golden_answer": "使用netease:allow_offhand组件，设置value为true即可将物品放在副手。限制包括：副手不支持minecraft:foil和netease:render_offsets等组件；目前基岩版原版副手功能较弱，主要用于装饰和逻辑判断。"
+  },
+  {
+    "question": "如何设置自定义物品的耐久度？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"],
+    "golden_answer": "使用minecraft:max_damage组件设置耐久度，范围为[0, 32767]。注意：若物品堆叠数量大于1，耐久度变更对整叠物品生效；耐久度为0后，每次消耗耐久度的行为会使数量减一。"
+  },
+  {
+    "question": "自定义食品的JSON结构需要包含什么关键字段？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"],
+    "golden_answer": "需要在minecraft:item的components中包含minecraft:food节点，其下可配置nutrition（营养值）、saturation_modifier（饱和度等级）、using_converts_to（使用后转化物品）、on_use_action（使用动作）、effects（使用后效果）等字段。饱和度等级有poor/low/normal/good/max/supernatural六个等级。"
+  },
+  {
+    "question": "如何给自定义物品添加闪烁效果？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"],
+    "golden_answer": "在物品JSON的components中添加minecraft:foil组件，可以使物品拥有类似附魔的闪烁效果。"
+  },
+  {
+    "question": "netease:fire_resistant组件的作用是什么？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"],
+    "golden_answer": "设置物品是否防火。防火的物品会与下界合金一样，不会被火烧毁，掉进岩浆时会弹走。使用格式为{\"value\": true/false}。"
+  },
+  {
+    "question": "自定义物品的冷却时间如何配置？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"],
+    "golden_answer": "使用netease:cooldown组件，category字段指定冷却类型（同种类型冷却互相影响），duration字段指定冷却时间（秒）。注意：自定义食品的冷却时间需定义在minecraft:food中。"
+  },
+  {
+    "question": "什么是minecraft:stacked_by_data组件？它有什么特性？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"],
+    "golden_answer": "值为bool类型，决定不同aux值的物品是否能够堆叠。不同aux的物品在合成配方中会被识别为不同的合成原料。该组件无法与耐久度组件共存。可以使用SpawnItemToPlayerInv接口将不同aux的物品生成到玩家背包。"
+  },
+  {
+    "question": "register_to_create_menu和category字段在自定义物品中分别控制什么？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"],
+    "golden_answer": "register_to_create_menu（bool）控制物品是否注册到创造栏；category（str）指定注册到创造栏的分类，可选值有Construction/Nature/Equipment/Items，默认Nature。"
+  },
+  {
+    "question": "如何注册一个自定义附魔？附魔JSON包含哪些必填字段？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"],
+    "golden_answer": "在mod行为包和资源包内添加netease_enchants文件夹，向其中添加自定义附魔JSON。必填字段包括：identifier（附魔id，需全小写）、description（附魔名称，对应zh_CN.lang）、primary_slots（附魔槽位）、cost（经验消耗数组，元素数量需与max_level一致）。"
+  },
+  {
+    "question": "自定义附魔的primary_slots支持哪些槽位类型？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"],
+    "golden_answer": "支持all（全部）、g_armor（全部盔甲）、armor_head/armor_torso/armor_legs/armor_feet（各部位盔甲）、sword、bow、spear（三叉戟）、crossbow（弩）、g_tool（锄/剪刀/打火石/盾）、g_digging（锄/斧/镐/锹）、axe、pickaxe、shovel、fishing_rod、carrot_stick、elytra（鞘翅）、cosmetic_head、compass、mushroom_stick等。"
+  },
+  {
+    "question": "自定义附魔中frequency字段有哪几个等级？各对应多少cost？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"],
+    "golden_answer": "四个等级：common（cost=1）、uncommon（cost=2）、rare（cost=4）、very_rare（cost=8）。稀有度影响铁砧结合附魔物品时的经验消耗计算。"
+  },
+  {
+    "question": "什么是宝藏型魔咒（is_treasure_only）？它可以通过哪些方式获取？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"],
+    "golden_answer": "当is_treasure_only设为true时为宝藏型魔咒。仅能通过以下方式获取：配置指定附魔等级的战利品表（enchant_with_levels）、配置随机附魔的战利品表（enchant_randomly）、配置指定附魔的战利品表（specific_enchants）、与图书管理员交易（附魔书价格翻倍）。"
+  },
+  {
+    "question": "自定义附魔的cost数组有什么要求？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"],
+    "golden_answer": "cost数组的每个元素对应附魔威力等级的经验消耗，会影响砂轮移除魔咒时返还的经验值以及附魔台上被附魔到该魔咒的概率（cost越大附魔概率越小）。列表内元素数量需与max_level一致，否则注册失败。"
+  },
+  {
+    "question": "哪些物品无法在附魔台上进行自定义附魔，但可以在铁砧上附魔？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"],
+    "golden_answer": "剪刀（shears）、打火石（flintsteel）、盾（shield）、鞘翅（elytra）、骷髅模型/僵尸模型等装饰头（cosmetic_head）、指南针（compass）。这些物品由于原版特性无法在附魔台上附魔，但可以在铁砧上进行自定义附魔。"
+  },
+  {
+    "question": "netease:weapon组件中type字段支持哪些武器工具类型？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/2-自定义武器及工具.md"],
+    "golden_answer": "支持sword（剑）、shovel（铲）、pickaxe（镐）、hatchet（斧）、hoe（锄头）五种类型。"
+  },
+  {
+    "question": "自定义基础物品的custom_item_type可选值有哪些？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"],
+    "golden_answer": "可选值有：weapon（武器）、armor（盔甲）、egg（生物蛋）、ranged_weapon（远程武器）、projectile_item（弹射物）。"
+  },
+  {
+    "question": "如何在自定义物品中使用村民交易功能？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"],
+    "golden_answer": "将行为包交易配置中的item字段修改为自定义物品的identifier即可。可以参考CustomItemsMod行为包中trading目录下的交易JSON文件，将交易项中的原版物品替换为自定义物品identifier。"
+  },
+  {
+    "question": "自定义武器如何设置其挖掘等级？level值对应哪些修复材料？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/2-自定义武器及工具.md"],
+    "golden_answer": "level字段设置挖掘等级：0级对应木板修复（speed=2时）或金锭；1级对应石头；2级对应铁锭；3级对应钻石；大于3级无法使用铁砧修复。对于镐子，挖掘等级需大于等于方块的挖掘等级才会产生掉落物。原版中木镐/金镐为0，石镐为1，铁镐为2，钻石镐为3。"
+  },
+  {
+    "question": "如何通过战利品表让生物掉落自定义物品？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"],
+    "golden_answer": "自定义物品的identifier可用作loot_table配置掉落物。在loot_tables目录下对应生物的JSON文件中，将原版物品名替换为自定义物品的identifier。参考CustomItemsMod行为包的loot_tables/entities/zombie.json。"
+  },
+  {
+    "question": "卸载包含自定义物品的mod后，玩家背包中的自定义物品会发生什么？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"],
+    "golden_answer": "物品会消失。若重新加载mod，对卸载期间登录过的玩家，物品不会恢复；没登录过的玩家，物品可以保留。容器内物品逻辑相同——探索过的区域不恢复，未探索区域可保留。掉落物同理，除非subchunk内没有其他entity。"
+  },
+  {
+    "question": "如何配置获得指定附魔等级物品的战利品表？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"],
+    "golden_answer": "使用enchant_with_levels函数，配置levels（附魔等级）和treasure（是否支持宝藏型附魔）参数。在战利品表的entries中的functions数组内添加该函数配置。"
+  },
+  {
+    "question": "自定义武器/工具的type值与自定义附魔槽位是如何对应的？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"],
+    "golden_answer": "sword→sword、shovel→shovel、pickaxe→pickaxe、hatchet→axe、hoe→hoe。注意hatchet虽然类型名是hatchet，但对应的自定义附魔槽位是axe。"
+  },
+  {
+    "question": "如何实现自定义物品的堆肥功能？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"],
+    "golden_answer": "使用netease:compostable组件，值为整数表示堆肥成功概率的百分比。例如\"netease:compostable\": 48表示48%的堆肥成功概率。"
+  },
+  {
+    "question": "自定义附魔中is_discoverable和is_lootable有什么区别？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"],
+    "golden_answer": "is_discoverable设为false时，附魔不会通过附魔台等常规途径获取，只能通过图书管理员交易（需is_lootable为true）或战利品表指定附魔（specific_enchants）获取。is_lootable只影响与图书管理员的交易，设为true时图书管理员可能出售包含该附魔的附魔书。"
+  },
+  {
+    "question": "铁砧结合附魔物品的经验消耗是如何计算的？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"],
+    "golden_answer": "先计算物品总cost（各附魔的稀有度cost × 威力等级之和，附魔书则cost减半）；再计算initial_total_cost（物品1）和combined_total_cost（预计产物）；final_cost = combined_total_cost - initial_total_cost。若final_cost>0且物品1数量>1，则final_cost=40。最终消耗还受其他因素影响。"
+  },
+  {
+    "question": "is_curse诅咒附魔有什么特性？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"],
+    "golden_answer": "is_curse设为true时为诅咒附魔，不可通过砂轮移除。默认值为false。"
+  },
+  {
+    "question": "自定义远程武器支持附魔吗？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"],
+    "golden_answer": "自定义远程武器无法附上原生魔咒，但可以附上primary_slots配置为bow或crossbow的自定义附魔。"
+  },
+  {
+    "question": "自定义武器与普通自定义物品在注册时有什么不同？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/2-自定义武器及工具.md"],
+    "golden_answer": "注册步骤与基础物品相同（1-6步），但需要在behavior的JSON中添加：custom_item_type设为weapon、必填的netease:weapon组件（含type/level/attack_damage等参数）、可选的最大堆叠数量和耐久度设置。category默认值改为Equipment。"
+  },
+  {
+    "question": "图书管理员交易附魔书时，最终价格是如何计算的？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"],
+    "golden_answer": "随机选取一个is_lootable为true的附魔；baseCostA = base_cost + random(base_random_cost + 附魔威力等级 × per_level_random_cost) + per_level_cost × 附魔威力等级；若为宝藏附魔则baseCostA翻倍；若超过物品最大堆叠数则取最大值。最终价格还会受村庄英雄状态和price_multiplier影响。"
+  },
+  {
+    "question": "自定义物品的description字段中可配置哪些关键属性？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"],
+    "golden_answer": "identifier（全局唯一标识符）、register_to_create_menu（是否注册到创造栏）、category（创造栏分类：Construction/Nature/Equipment/Items）、custom_item_type（物品类别：weapon/armor/egg/ranged_weapon/projectile_item）。"
+  },
+  {
+    "question": "如何给自定义物品配置使用动画？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"],
+    "golden_answer": "在components中使用minecraft:use_animation组件设置使用物品时播放的动画名称。需在材质包中定义对应动画，如原版apple使用eat动画，在resource_packs/vanilla/items/apple.json中有\"minecraft:use_animation\": \"eat\"配置。"
+  },
+  {
+    "question": "netease:seed组件用于什么场景？有什么注意事项？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"],
+    "golden_answer": "设置种子的属性，如crop_result（作物结果）和plant_at（可种植方块）。注意plant_at列表中需保持格式一致，如都使用带命名空间前缀的格式或都不带，否则在相邻自定义农作物种植新作物时可能导致上一个农作物被破坏。"
+  },
+  {
+    "question": "自定义附魔如何配置冲突附魔？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"],
+    "golden_answer": "在附魔JSON中使用incompatible字段，值为字符串数组，填入冲突附魔的identifier名称。例如\"incompatible\": [\"unbreaking\"]表示与耐久附魔冲突。"
+  },
+  {
+    "question": "自定义盔甲与自定义附魔槽位的对应关系是什么？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"],
+    "golden_answer": "通过netease:armor组件的armor_slot值对应：0（HEAD）→armor_head、1（BODY）→armor_torso、2（LEG）→armor_legs、3（FOOT）→armor_feet。自定义盔甲支持原生附魔及自定义附魔。"
+  },
+  {
+    "question": "netease:customtips组件的作用是什么？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"],
+    "golden_answer": "用于定义物品描述信息，value字段为字符串，设置后物品会显示自定义的描述文本。"
+  },
+  {
+    "question": "战利品表中有哪些与附魔相关的函数？各自作用是什么？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"],
+    "golden_answer": "四种：enchant_with_levels（指定附魔等级的附魔，参数levels和treasure）、enchant_randomly（随机附魔，等级1-30随机，参数treasure）、specific_enchants（指定附魔类型，参数enchants列表含id和level范围）、enchant_random_gear（随机附魔装备/工具，参数chance表示被附魔的概率）。"
+  },
+  {
+    "question": "format_version在自定义物品JSON中应该填写什么值？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"],
+    "golden_answer": "请填写1.10。"
+  },
+  {
+    "question": "自定义物品注册时，resource包需要做哪些配置？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"],
+    "golden_answer": "将物品贴图放到textures/items目录；在textures中新建item_texture.json配置资源名与贴图的对应关系（资源名需全局唯一）；在resource中新建netease_items_res文件夹，添加JSON配置物品表现属性，其中identifier需与behavior一致，贴图值需与item_texture.json中配置的资源名对应。"
+  },
+  {
+    "question": "自定义物品常见的JSON报错原因是什么？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"],
+    "golden_answer": "一般为JSON格式有问题，检查是否漏写或多写逗号、括号是否对应等。报错信息通常为\"JSON: xxx has an error\"。"
+  },
+  {
+    "question": "自定义物品的标识符如何在MOD SDK的Python接口中使用？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"],
+    "golden_answer": "支持MOD SDK文档中所有与物品相关的事件及接口，使用itemName参数传递物品identifier来区分不同物品。与旧版自定义物品不同，现在的事件及接口统一使用物品identifier而非旧版物品名。"
+  },
+  {
+    "question": "如何利用自定义配方的能力，将自定义物品作为合成材料或合成结果？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"],
+    "golden_answer": "在自定义配方JSON中，材料及结果字段都支持填写自定义物品的identifier。参考CustomItemsMod行为包的netease_recipes目录中的配方文件，将原版物品名替换为自定义物品identifier即可。"
+  },
+  {
+    "question": "自定义附魔相关的Mod API有哪些？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"],
+    "golden_answer": "AddModEnchantToInvItem（给物品栏物品添加附魔）、RemoveModEnchantToInvItem（移除物品栏物品附魔）、GetInvItemModEnchantData（获取物品栏物品附魔信息）、GetEquItemModEnchant（获取装备槽盔甲附魔）。此外还有OnItemPutInEnchantingModelServerEvent事件，在玩家将物品放到附魔台上时触发。"
+  },
+  {
+    "question": "村民交易中，第一个物品和第二个物品的数量计算有什么区别？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"],
+    "golden_answer": "第一个物品受quantity配置、函数修改（如enchant_book_for_trading）、村庄英雄状态和price_multiplier等多重因素影响；第二个物品仅受quantity配置影响，不会因其他原因增减。两者若quantity超过物品最大堆叠数，都取最大堆叠数。"
+  },
+  {
+    "question": "/enchant指令如何使用自定义附魔？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"],
+    "golden_answer": "成功注册的自定义附魔将自动出现在/enchant指令备选项中。使用格式：/enchant <玩家：目标> <魔咒名：魔咒id(string)> [等级：整数]。"
+  },
+  {
+    "question": "如何让自定义物品在手持时不显示？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"],
+    "golden_answer": "使用netease:show_in_hand组件，设置value为false即可。注意该组件的格式和微软的component不一样，里面多了一层value键。"
+  },
+  {
+    "question": "netease:fuel组件如何配置自定义物品作为熔炉燃料？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"],
+    "golden_answer": "使用netease:fuel组件，duration字段为整数，表示该物品可提供的熔炉燃烧时长（秒）。属于可燃类物品组件。"
+  },
+  {
+    "question": "自定义附魔中，附魔威力等级（max_level）和附魔等级（enchant level）是什么关系？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"],
+    "golden_answer": "附魔威力等级不等于附魔等级。max_level设置后会自动在创造栏注册各等级的附魔书，必须与cost数组长度相等。附魔等级是另一个概念，与附魔台上的等级消耗有关，详见官方wiki的附魔机制说明。"
+  },
+  {
+    "question": "自定义物品注册时，为什么物品贴图的资源名需要全局唯一？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"],
+    "golden_answer": "因为item_texture.json中的资源名用于将贴图文件与物品标识符关联，如果不同mod使用相同资源名会互相覆盖，导致贴图显示错误。资源名必须满足全局唯一，格式可参考Mod PC开发包中data/resource_packs/vanilla/textures/item_texture.json。"
+  },
+  {
+    "question": "netease:enchant_material组件的作用是什么？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"],
+    "golden_answer": "设置物品是否可以当附魔材料，value为bool类型，默认false。可以参考CustomItemsMod示例行为包的netease_items_beh/customitems_test_enchantmaterial.json。"
+  },
+  {
+    "question": "自定义附魔能否通过附魔台获取？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"],
+    "golden_answer": "可以，若is_discoverable为true（默认值），自定义附魔可以通过附魔台获取。但当物品属于剪刀、打火石、盾、鞘翅、cosmetic_head或指南针时，即使注册了自定义附魔也无法在附魔台上附魔，只能在铁砧上进行。另外，宝藏型附魔（is_treasure_only=true）无法通过附魔台获取。"
+  },
+  {
+    "question": "如何使用战利品表配置随机附魔物品的掉落？",
+    "relevant_sources": ["mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"],
+    "golden_answer": "在战利品表的functions中使用enchant_randomly函数。附魔等级在1-30内随机取整数，treasure参数控制是否支持宝藏型附魔。该函数适用于给任意物品随机添加符合其槽位的附魔。"
+  }
+]
