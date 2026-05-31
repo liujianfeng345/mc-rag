@@ -27,3 +27,6 @@ models/
 error.txt
 
 .langgraph_api
+
+# Benchmark 结果
+benchmark_results/
