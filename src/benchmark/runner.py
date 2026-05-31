@@ -137,17 +137,37 @@ class BenchmarkRunner:
         self, version: str, dataset, store: VectorStore,
     ) -> VersionResult:
         """对单个版本跑全部问题。"""
+        from rich.console import Console
+        console = Console()
+
         graph = _build_graph_for_version(version, store)
         output_node = OUTPUT_NODES.get(version, "generate")
+        total = len(dataset)
+
+        console.print(
+            f"\n[bold cyan]{version.upper()}[/bold cyan] 开始评测 "
+            f"（共 [bold]{total}[/bold] 题）"
+        )
 
         timings: list[QuestionTiming] = []
         answers: list[str] = []
 
-        for item in dataset.items:
+        for idx, item in enumerate(dataset.items, 1):
             # 构建输入 state
             input_state: dict = {"question": item.question}
             if version in ("v1", "v2"):
                 input_state["rewrite_count"] = 0
+
+            # 进度提示
+            question_preview = item.question[:60] + "..." if len(item.question) > 60 else item.question
+            remaining = total - idx
+            console.print(
+                f"  [dim][{idx}/{total}][/dim] {question_preview} "
+                f"[dim](剩余 {remaining})[/dim]",
+                end="\r",
+            )
+
+            t0 = time.perf_counter()
 
             if self.eval_only:
                 # eval_only 模式：直接用 graph.ainvoke（不打点）
@@ -160,8 +180,20 @@ class BenchmarkRunner:
                 answer = final_state.get("final_report") or final_state.get("generation", "")
                 timing.question = item.question
 
+            elapsed = (time.perf_counter() - t0) * 1000
+            console.print(
+                f"  [dim][{idx}/{total}][/dim] {question_preview} "
+                f"[green]✓ {elapsed:.0f}ms[/green]"
+            )
+
             timings.append(timing)
             answers.append(answer)
+
+        avg_total = sum(t.total_ms for t in timings) / len(timings) if timings else 0
+        console.print(
+            f"  [bold cyan]{version.upper()}[/bold cyan] 完成，"
+            f"平均耗时 [bold]{avg_total:.0f}ms[/bold]\n"
+        )
 
         vtiming = VersionTiming(agent_version=version, per_question=timings)
 
@@ -170,6 +202,9 @@ class BenchmarkRunner:
         answer_relevance = 0.0
         context_relevance = 0.0
         if not self.profile_only:
+            console.print(
+                f"  [dim]{version.upper()} RAGAS 生成质量评测中...[/dim]"
+            )
             ragas_metrics = await _compute_ragas_batch(dataset, answers, store)
             faithfulness = ragas_metrics["avg_faithfulness"]
             answer_relevance = ragas_metrics["avg_answer_relevance"]
