@@ -6,7 +6,7 @@ from pathlib import Path
 DEFAULT_VERSIONS = ["v1", "v2", "v3", "v4"]
 
 # 默认数据集路径
-DEFAULT_DATASET = str(Path(__file__).parent.parent.parent / "eval_data" / "generated_questions.json")
+DEFAULT_DATASET = str(Path(__file__).parent.parent.parent / "eval_data" / "golden_50.json")
 
 # 检索指标 K 值
 RETRIEVAL_K_VALUES = [3, 5, 10]
