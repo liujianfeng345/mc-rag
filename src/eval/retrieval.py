@@ -230,10 +230,12 @@ class RetrievalEvaluator:
 
         # 辅助函数：判断第 i 个结果是否相关
         def _is_relevant(source_str: str) -> bool:
-            # 去掉 chunk 索引后缀做模糊匹配
+            # 归一化路径分隔符（ChromaDB 存 \，数据集用 /）
             base = source_str.rsplit("#", 1)[0] if "#" in source_str else source_str
+            base = base.replace("\\", "/")
             for rel in relevant_set:
-                if base == rel or base.startswith(rel) or rel.startswith(base):
+                rel_norm = rel.replace("\\", "/")
+                if base == rel_norm or base.startswith(rel_norm) or rel_norm.startswith(base):
                     return True
             return False
 
@@ -392,7 +394,8 @@ class RetrievalEvaluator:
         relevant_set = set(auto_relevant)
 
         def _is_relevant(source_str: str) -> bool:
-            return source_str in relevant_set
+            # 归一化路径分隔符
+            return source_str.replace("\\", "/") in relevant_set
 
         # Recall@K & Precision@K & Hit@K
         recall_at_k: dict[int, float] = {}
