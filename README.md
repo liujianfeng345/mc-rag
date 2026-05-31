@@ -285,6 +285,14 @@ uv run python -m src.main demo
 
 # 7. 启动 LangGraph API Server（LangSmith 平台 / 自托管）
 uv run langgraph dev
+
+# 8. Benchmark 跨版本对比测试（检索 + 生成质量 + 性能）
+uv run python -m src.main benchmark                     # 完整评测 v1~v4
+uv run python -m src.main benchmark --versions v1,v4    # 只对比指定版本
+uv run python -m src.main benchmark --profile-only      # 仅性能压测
+uv run python -m src.main benchmark --eval-only         # 仅质量评测
+uv run python -m src.main benchmark --set-baseline      # 初始化基线阈值
+uv run python -m src.main benchmark --history           # 查看历史趋势
 ```
 
 ## 项目结构
@@ -319,6 +327,20 @@ mc-rag/
 │   │   ├── node.py               # 节点函数：decompose / research_batch / synthesize / reflect / refine
 │   │   ├── prompt.py             # LLM 提示词模板（含反思/精炼专用提示词）
 │   │   └── state.py              # 图状态类型定义（含 v4 新增反思/精炼字段）
+│   ├── eval/                      # RAG 评测模块
+│   │   ├── runner.py               # 统一评测入口
+│   │   ├── retrieval.py            # 检索质量评测（Recall / MRR / NDCG）
+│   │   ├── ragas_eval.py           # 生成质量评测（Faithfulness / Answer Relevance）
+│   │   ├── dataset.py              # 评测数据集定义
+│   │   └── dataset_builder.py      # 数据集辅助生成
+│   ├── benchmark/                  # Benchmark 测试系统
+│   │   ├── cli.py                  # CLI 命令入口
+│   │   ├── runner.py               # 核心调度（多版本循环 + RAGAS）
+│   │   ├── profiler.py             # 性能打点（TTFT / 阶段耗时）
+│   │   ├── comparator.py           # 基线对比（阈值 + 退化检测）
+│   │   ├── reporter.py             # 报告输出（Rich 表格 + JSON）
+│   │   ├── database.py             # SQLite 存储（跑分记录 + 基线配置）
+│   │   └── benchmark_config.py     # 默认配置
 │   ├── vector/
 │   │   ├── vector_store.py       # ChromaDB 向量存储封装（支持语义 + BM25 混合检索）
 │   │   └── document_loader.py    # Markdown 文档加载与分块

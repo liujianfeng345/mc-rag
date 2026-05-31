@@ -28,6 +28,13 @@ uv run python -m src.main eval -d eval_data/sample_questions.json               
 uv run python -m src.main eval -d eval_data/sample_questions.json --retrieval-only  # 仅检索评测
 uv run python -m src.main eval -d eval_data/sample_questions.json --ragas-only -o report.json  # 仅生成质量评测并保存报告
 
+# Benchmark 跨版本对比
+uv run python -m src.main benchmark                     # v1~v4 完整对比
+uv run python -m src.main benchmark --versions v1,v4    # 指定版本
+uv run python -m src.main benchmark --profile-only      # 仅性能压测
+uv run python -m src.main benchmark --history           # 查看历史趋势
+uv run python -m src.main benchmark --set-baseline      # 设置基线阈值
+
 # 评测数据集辅助生成（从知识库自动抽题）
 uv run python -m src.eval.dataset_builder -c 10 -o eval_data/generated_questions.json
 ```
