@@ -261,6 +261,39 @@ async def main():
         help="评测报告保存路径（JSON 格式）",
     )
 
+    # benchmark
+    bench_parser = subparsers.add_parser("benchmark", help="RAG Benchmark 跨版本对比测试")
+    bench_parser.add_argument(
+        "--dataset", "-d",
+        default="",
+        help="评测数据集 JSON 文件路径（默认使用 generated_questions.json）",
+    )
+    bench_parser.add_argument(
+        "--versions",
+        default="",
+        help="评测版本列表，逗号分隔（默认 v1,v2,v3,v4）",
+    )
+    bench_parser.add_argument(
+        "--profile-only",
+        action="store_true",
+        help="仅性能压测，跳过质量评测",
+    )
+    bench_parser.add_argument(
+        "--eval-only",
+        action="store_true",
+        help="仅质量评测，跳过性能打点",
+    )
+    bench_parser.add_argument(
+        "--set-baseline",
+        action="store_true",
+        help="初始化/更新基线阈值",
+    )
+    bench_parser.add_argument(
+        "--history",
+        action="store_true",
+        help="查看历史 benchmark 趋势",
+    )
+
     args = parser.parse_args()
 
     if args.command == "build":
@@ -271,6 +304,16 @@ async def main():
         await cmd_demo()
     elif args.command == "eval":
         await cmd_eval(args.dataset, args.retrieval_only, args.ragas_only, args.auto_retrieval, args.save_report)
+    elif args.command == "benchmark":
+        from .benchmark.cli import run_benchmark
+        await run_benchmark(
+            dataset=args.dataset,
+            versions=args.versions,
+            profile_only=args.profile_only,
+            eval_only=args.eval_only,
+            set_baseline=args.set_baseline,
+            history=args.history,
+        )
     else:
         parser.print_help()
 
