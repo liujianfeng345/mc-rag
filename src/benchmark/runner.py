@@ -61,6 +61,8 @@ class VersionResult:
     ragas_faithfulness: float = 0.0
     ragas_answer_relevance: float = 0.0
     ragas_context_relevance: float = 0.0
+    ragas_by_difficulty: dict[str, dict] = field(default_factory=dict)
+    # {"简单": {"faithfulness": 0.85, "answer_relevance": 0.82, "context_relevance": 0.73}, "中等": {...}, ...}
 
 
 @dataclass
@@ -98,6 +100,9 @@ class BenchmarkRunner:
 
         dataset = EvalDataset.from_json(self.dataset_path)
         store = VectorStore()
+
+        # 自动分类难度
+        await dataset.classify_difficulty()
         db = self.db
         db.init_default_baselines()
 
@@ -205,7 +210,8 @@ class BenchmarkRunner:
             console.print(
                 f"  [dim]{version.upper()} RAGAS 生成质量评测中...[/dim]"
             )
-            ragas_metrics = await _compute_ragas_batch(dataset, answers, store)
+            difficulties = [item.difficulty for item in dataset.items]
+            ragas_metrics = await _compute_ragas_batch(dataset, answers, store, difficulties)
             faithfulness = ragas_metrics["avg_faithfulness"]
             answer_relevance = ragas_metrics["avg_answer_relevance"]
             context_relevance = ragas_metrics["avg_context_relevance"]
@@ -217,6 +223,7 @@ class BenchmarkRunner:
             ragas_faithfulness=faithfulness,
             ragas_answer_relevance=answer_relevance,
             ragas_context_relevance=context_relevance,
+            ragas_by_difficulty=ragas_metrics.get("by_difficulty", {}),
         )
 
     def _persist_runs(self, db: BenchmarkDB, report: BenchmarkReport) -> None:
@@ -242,6 +249,16 @@ class BenchmarkRunner:
                 "faithfulness": vr.ragas_faithfulness,
                 "answer_relevance": vr.ragas_answer_relevance,
                 "context_relevance": vr.ragas_context_relevance,
+                # 追加分层指标
+                "faithfulness_简单": vr.ragas_by_difficulty.get("简单", {}).get("faithfulness", 0.0),
+                "answer_relevance_简单": vr.ragas_by_difficulty.get("简单", {}).get("answer_relevance", 0.0),
+                "context_relevance_简单": vr.ragas_by_difficulty.get("简单", {}).get("context_relevance", 0.0),
+                "faithfulness_中等": vr.ragas_by_difficulty.get("中等", {}).get("faithfulness", 0.0),
+                "answer_relevance_中等": vr.ragas_by_difficulty.get("中等", {}).get("answer_relevance", 0.0),
+                "context_relevance_中等": vr.ragas_by_difficulty.get("中等", {}).get("context_relevance", 0.0),
+                "faithfulness_复杂": vr.ragas_by_difficulty.get("复杂", {}).get("faithfulness", 0.0),
+                "answer_relevance_复杂": vr.ragas_by_difficulty.get("复杂", {}).get("answer_relevance", 0.0),
+                "context_relevance_复杂": vr.ragas_by_difficulty.get("复杂", {}).get("context_relevance", 0.0),
                 "passed": 1 if report.passed_map.get(vr.agent_version, False) else 0,
                 "report_json": json.dumps(_build_report_dict(report, vr), ensure_ascii=False),
             }
@@ -263,8 +280,8 @@ from langchain_core.messages import HumanMessage
 from langchain_openai import ChatOpenAI
 
 
-async def _compute_ragas_batch(dataset, answers, store) -> dict:
-    """批量计算 RAGAS 指标（Faithfulness, Answer Relevance, Context Relevance）。"""
+async def _compute_ragas_batch(dataset, answers, store, difficulties: list[str]) -> dict:
+    """批量计算 RAGAS 指标（Faithfulness, Answer Relevance, Context Relevance），按难度分层。"""
     llm = ChatOpenAI(
         model=LLM_MODEL, api_key=DEEPSEEK_API_KEY, base_url=DEEPSEEK_BASE_URL,
         temperature=0.0, max_tokens=2048,
@@ -280,9 +297,14 @@ async def _compute_ragas_batch(dataset, answers, store) -> dict:
     all_answer_rel = []
     all_context_rel = []
 
+    faith_by_diff: dict[str, list[float]] = {"简单": [], "中等": [], "复杂": [], "未分类": []}
+    ar_by_diff: dict[str, list[float]] = {"简单": [], "中等": [], "复杂": [], "未分类": []}
+    cr_by_diff: dict[str, list[float]] = {"简单": [], "中等": [], "复杂": [], "未分类": []}
+
     for idx, item in enumerate(dataset.items):
         question = item.question
         answer = answers[idx]
+        diff = difficulties[idx] or "未分类"
 
         docs = await store.hybrid_search(question, top_k=RETRIEVAL_TOP_K)
         context = "\n\n".join(
@@ -296,9 +318,12 @@ async def _compute_ragas_batch(dataset, answers, store) -> dict:
                 _verify_statement(llm, s, context) for s in statements
             ])
             yes_count = sum(1 for v in verdicts if v == "YES")
-            all_faith.append(yes_count / len(statements))
+            faith_val = yes_count / len(statements)
+            all_faith.append(faith_val)
         else:
-            all_faith.append(1.0)
+            faith_val = 1.0
+            all_faith.append(faith_val)
+        faith_by_diff[diff].append(faith_val)
 
         # Answer Relevance
         reversed_qs = await _reverse_questions(llm, answer)
@@ -309,22 +334,38 @@ async def _compute_ragas_batch(dataset, answers, store) -> dict:
             gen_embeds = np.array(all_embeds[1:])
             q_norm = q_embed / (np.linalg.norm(q_embed) + 1e-8)
             gen_norms = gen_embeds / (np.linalg.norm(gen_embeds, axis=1, keepdims=True) + 1e-8)
-            all_answer_rel.append(float(np.mean(np.dot(gen_norms, q_norm))))
+            ar_val = float(np.mean(np.dot(gen_norms, q_norm)))
+            all_answer_rel.append(ar_val)
         else:
-            all_answer_rel.append(0.0)
+            ar_val = 0.0
+            all_answer_rel.append(ar_val)
+        ar_by_diff[diff].append(ar_val)
 
         # Context Relevance
         relevant_sents = await _extract_relevant(llm, question, context[:8000])
         total_sents = len([s for s in re.split(r'[。！？\n]+', context) if s.strip()])
         if total_sents > 0 and relevant_sents:
-            all_context_rel.append(min(len(relevant_sents) / total_sents, 1.0))
+            cr_val = min(len(relevant_sents) / total_sents, 1.0)
+            all_context_rel.append(cr_val)
         else:
-            all_context_rel.append(0.0)
+            cr_val = 0.0
+            all_context_rel.append(cr_val)
+        cr_by_diff[diff].append(cr_val)
+
+    ragas_by_difficulty = {}
+    for diff in ["简单", "中等", "复杂", "未分类"]:
+        if faith_by_diff.get(diff):
+            ragas_by_difficulty[diff] = {
+                "faithfulness": float(np.mean(faith_by_diff[diff])),
+                "answer_relevance": float(np.mean(ar_by_diff[diff])),
+                "context_relevance": float(np.mean(cr_by_diff[diff])),
+            }
 
     return {
         "avg_faithfulness": float(np.mean(all_faith)) if all_faith else 0.0,
         "avg_answer_relevance": float(np.mean(all_answer_rel)) if all_answer_rel else 0.0,
         "avg_context_relevance": float(np.mean(all_context_rel)) if all_context_rel else 0.0,
+        "by_difficulty": ragas_by_difficulty,
     }
 
 
@@ -404,6 +445,7 @@ def _build_report_dict(report: BenchmarkReport, vr: VersionResult) -> dict:
             "faithfulness": vr.ragas_faithfulness,
             "answer_relevance": vr.ragas_answer_relevance,
             "context_relevance": vr.ragas_context_relevance,
+            "by_difficulty": vr.ragas_by_difficulty,
         },
         "passed": report.passed_map.get(vr.agent_version, False),
     }
