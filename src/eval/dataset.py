@@ -40,13 +40,25 @@ class EvalItem:
             difficulty=data.get("difficulty", ""),
         )
 
+    def to_dict(self) -> dict:
+        """序列化为字典，用于回写 JSON。"""
+        d: dict = {"question": self.question}
+        if self.relevant_sources:
+            d["relevant_sources"] = self.relevant_sources
+        if self.golden_answer:
+            d["golden_answer"] = self.golden_answer
+        if self.difficulty:
+            d["difficulty"] = self.difficulty
+        return d
+
 
 class EvalDataset:
     """评测数据集，从 JSON 文件加载。"""
 
-    def __init__(self, items: list[EvalItem], name: str = ""):
+    def __init__(self, items: list[EvalItem], name: str = "", source_path: str = ""):
         self.items = items
         self.name = name
+        self.source_path = source_path
 
     def __len__(self) -> int:
         return len(self.items)
@@ -66,7 +78,16 @@ class EvalDataset:
             raise ValueError("评测数据集必须是 JSON 数组格式")
 
         items = [EvalItem.from_dict(item) for item in raw]
-        return cls(items, name=file_path.stem)
+        return cls(items, name=file_path.stem, source_path=str(file_path.resolve()))
+
+    def save_to_json(self, path: str = "") -> None:
+        """将数据集（含难度标签）写回 JSON 文件。不传 path 则覆盖源文件。"""
+        target = Path(path) if path else Path(self.source_path)
+        data = [item.to_dict() for item in self.items]
+        target.write_text(
+            json.dumps(data, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
 
     @property
     def has_relevance_labels(self) -> bool:
@@ -79,7 +100,14 @@ class EvalDataset:
         return any(item.golden_answer for item in self.items)
 
     async def classify_difficulty(self) -> None:
-        """对数据集中所有题目进行 LLM 难度分类，结果写入 EvalItem.difficulty。"""
+        """对数据集中未分类的题目进行 LLM 难度分类。
+
+        已有 difficulty 标签的题目会被跳过，避免重复调用 LLM。
+        分类结果写入 EvalItem.difficulty，可随后调用 save_to_json() 持久化。
+        """
+        unclassified = [item for item in self.items if not item.difficulty]
+        if not unclassified:
+            return
         from langchain_openai import ChatOpenAI
         from langchain_core.messages import HumanMessage
         from ..utils.config import DEEPSEEK_API_KEY, DEEPSEEK_BASE_URL, LLM_MODEL
@@ -118,7 +146,7 @@ class EvalDataset:
             except Exception:
                 pass  # 分类失败保持 ""
 
-        await asyncio.gather(*[_classify_one(item) for item in self.items])
+        await asyncio.gather(*[_classify_one(item) for item in unclassified])
 
     @property
     def difficulty_distribution(self) -> dict[str, int]:
