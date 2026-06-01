@@ -27,6 +27,15 @@ CREATE TABLE IF NOT EXISTS benchmark_runs (
     faithfulness REAL DEFAULT 0.0,
     answer_relevance REAL DEFAULT 0.0,
     context_relevance REAL DEFAULT 0.0,
+    faithfulness_简单 REAL DEFAULT 0.0,
+    faithfulness_中等 REAL DEFAULT 0.0,
+    faithfulness_复杂 REAL DEFAULT 0.0,
+    answer_relevance_简单 REAL DEFAULT 0.0,
+    answer_relevance_中等 REAL DEFAULT 0.0,
+    answer_relevance_复杂 REAL DEFAULT 0.0,
+    context_relevance_简单 REAL DEFAULT 0.0,
+    context_relevance_中等 REAL DEFAULT 0.0,
+    context_relevance_复杂 REAL DEFAULT 0.0,
     passed INTEGER DEFAULT 0,
     report_json TEXT DEFAULT '{}'
 );
@@ -58,6 +67,20 @@ class BenchmarkDB:
         try:
             with self._connect() as conn:
                 conn.executescript(SCHEMA)
+                # 迁移：为已有表补充分层列
+                existing_cols = {row[1] for row in conn.execute(
+                    "PRAGMA table_info(benchmark_runs)"
+                ).fetchall()}
+                diff_cols = [
+                    "faithfulness_简单", "faithfulness_中等", "faithfulness_复杂",
+                    "answer_relevance_简单", "answer_relevance_中等", "answer_relevance_复杂",
+                    "context_relevance_简单", "context_relevance_中等", "context_relevance_复杂",
+                ]
+                for col in diff_cols:
+                    if col not in existing_cols:
+                        conn.execute(
+                            f"ALTER TABLE benchmark_runs ADD COLUMN {col} REAL DEFAULT 0.0"
+                        )
                 conn.commit()
         except Exception as e:
             raise RuntimeError(
@@ -74,6 +97,9 @@ class BenchmarkDB:
             "avg_ttft_ms", "avg_retrieval_ms", "avg_generation_ms",
             "recall_at_5", "precision_at_5", "mrr", "ndcg_at_5", "hit_at_5",
             "faithfulness", "answer_relevance", "context_relevance",
+            "faithfulness_简单", "faithfulness_中等", "faithfulness_复杂",
+            "answer_relevance_简单", "answer_relevance_中等", "answer_relevance_复杂",
+            "context_relevance_简单", "context_relevance_中等", "context_relevance_复杂",
             "passed", "report_json",
         ]
         placeholders = ", ".join("?" for _ in columns)
