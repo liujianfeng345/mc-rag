@@ -65,6 +65,7 @@ RELEVANCE_JUDGE_PROMPT = """你的任务是判断一个"检索到的文档片段
 class RetrievalMetrics:
     """单次检索的指标。"""
     question: str
+    difficulty: str = ""  # 来自 EvalItem.difficulty
     recall_at_k: dict[int, float] = field(default_factory=dict)    # K → Recall
     precision_at_k: dict[int, float] = field(default_factory=dict) # K → Precision
     mrr: float = 0.0
@@ -162,6 +163,24 @@ class EvalResult:
             "",
         )
         return table
+
+    @property
+    def by_difficulty(self) -> dict[str, "EvalResult"]:
+        """按难度分组返回各自的 EvalResult。键为 "简单"/"中等"/"复杂"/"未分类"。"""
+        groups: dict[str, list[RetrievalMetrics]] = {"简单": [], "中等": [], "复杂": [], "未分类": []}
+        for m in self.metrics:
+            key = m.difficulty or "未分类"
+            groups.setdefault(key, []).append(m)
+        result: dict[str, "EvalResult"] = {}
+        for diff, metrics_list in groups.items():
+            if not metrics_list:
+                continue
+            result[diff] = EvalResult(
+                dataset_name=f"{self.dataset_name} ({diff})",
+                metrics=metrics_list,
+                k_values=self.k_values,
+            )
+        return result
 
 
 class RetrievalEvaluator:
@@ -277,6 +296,7 @@ class RetrievalEvaluator:
 
         return RetrievalMetrics(
             question=item.question,
+            difficulty=item.difficulty,
             recall_at_k=recall_at_k,
             precision_at_k=precision_at_k,
             mrr=mrr,
@@ -364,6 +384,7 @@ class RetrievalEvaluator:
                 retrieved_sources=retrieved_sources,
                 auto_relevant=auto_relevant,
                 k_values=k_values,
+                difficulty=item.difficulty,
             )
             all_metrics.append(metrics)
 
@@ -389,6 +410,7 @@ class RetrievalEvaluator:
         retrieved_sources: list[str],
         auto_relevant: list[str],
         k_values: list[int],
+        difficulty: str = "",
     ) -> RetrievalMetrics:
         """计算基于 LLM 自动标注的检索指标，逻辑与 _compute_metrics 一致。"""
         relevant_set = set(auto_relevant)
@@ -434,6 +456,7 @@ class RetrievalEvaluator:
 
         return RetrievalMetrics(
             question=question,
+            difficulty=difficulty,
             recall_at_k=recall_at_k,
             precision_at_k=precision_at_k,
             mrr=mrr,
