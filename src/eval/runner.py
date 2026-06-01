@@ -54,6 +54,65 @@ class FullEvalReport:
         if self.ragas_result:
             console.print(self.ragas_result.rich_table())
 
+        # ---- 难度分层 ----
+        self._print_by_difficulty(console)
+
+    def _print_by_difficulty(self, console: Console) -> None:
+        """按难度分组打印检索和 RAGAS 指标。"""
+        retrieval_groups = self.retrieval_result.by_difficulty if self.retrieval_result else {}
+        ragas_groups = self.ragas_result.by_difficulty if self.ragas_result else {}
+
+        all_diffs = ["简单", "中等", "复杂", "未分类"]
+        existing = [d for d in all_diffs if d in retrieval_groups or d in ragas_groups]
+        if not existing:
+            return
+
+        # 检索分组表
+        if retrieval_groups:
+            rtable = Table(title="检索评测（按难度）")
+            rtable.add_column("难度", style="cyan")
+            rtable.add_column("题目数", justify="right")
+            rtable.add_column("Recall@5", justify="right")
+            rtable.add_column("MRR", justify="right")
+            rtable.add_column("Hit@5", justify="right")
+
+            for diff in all_diffs:
+                g = retrieval_groups.get(diff)
+                if g is None:
+                    continue
+                rtable.add_row(
+                    diff,
+                    str(len(g.metrics)),
+                    f"{g.avg_recall.get(5, 0):.1%}",
+                    f"{g.avg_mrr:.3f}",
+                    f"{g.avg_hit.get(5, 0):.1%}",
+                )
+            console.print()
+            console.print(rtable)
+
+        # RAGAS 分组表
+        if ragas_groups:
+            gtable = Table(title="生成质量评测（按难度）")
+            gtable.add_column("难度", style="cyan")
+            gtable.add_column("题目数", justify="right")
+            gtable.add_column("Faithfulness", justify="right")
+            gtable.add_column("Answer Rel.", justify="right")
+            gtable.add_column("Context Rel.", justify="right")
+
+            for diff in all_diffs:
+                g = ragas_groups.get(diff)
+                if g is None:
+                    continue
+                gtable.add_row(
+                    diff,
+                    str(len(g.metrics)),
+                    f"{g.avg_faithfulness:.1%}",
+                    f"{g.avg_answer_relevance:.1%}",
+                    f"{g.avg_context_relevance:.1%}",
+                )
+            console.print()
+            console.print(gtable)
+
     def to_dict(self) -> dict:
         """导出为字典，方便保存为 JSON。"""
         report = {
@@ -98,6 +157,31 @@ class FullEvalReport:
                 ],
             }
 
+        # 难度分层
+        retrieval_groups = self.retrieval_result.by_difficulty if self.retrieval_result else {}
+        ragas_groups = self.ragas_result.by_difficulty if self.ragas_result else {}
+        report["by_difficulty"] = {}
+        for diff in ["简单", "中等", "复杂", "未分类"]:
+            entry: dict = {"difficulty": diff}
+            rg = retrieval_groups.get(diff)
+            if rg:
+                entry["retrieval"] = {
+                    "question_count": len(rg.metrics),
+                    "recall_at_5": rg.avg_recall.get(5, 0),
+                    "mrr": rg.avg_mrr,
+                    "hit_at_5": rg.avg_hit.get(5, 0),
+                }
+            gg = ragas_groups.get(diff)
+            if gg:
+                entry["ragas"] = {
+                    "question_count": len(gg.metrics),
+                    "faithfulness": gg.avg_faithfulness,
+                    "answer_relevance": gg.avg_answer_relevance,
+                    "context_relevance": gg.avg_context_relevance,
+                }
+            if rg or gg:
+                report["by_difficulty"][diff] = entry
+
         return report
 
 
@@ -133,6 +217,13 @@ async def run_eval(
     store = VectorStore()
     store_stats = await store.stats()
     console.print(f"  知识库文档块: {store_stats['文档块数量']}\n")
+
+    # 自动分类难度
+    console.print("[bold]正在自动分类问题难度...[/bold]")
+    await dataset.classify_difficulty()
+    dist = dataset.difficulty_distribution
+    console.print(f"  难度分布: 简单={dist.get('简单', 0)}, 中等={dist.get('中等', 0)}, 复杂={dist.get('复杂', 0)}, 未分类={dist.get('未分类', 0)}")
+    console.print()
 
     # 检索评测决策逻辑：
     # - 如果用户指定 --ragas-only，跳过检索
