@@ -289,11 +289,11 @@ class VectorStore:
             doc = doc_objects[doc_id]
             doc.metadata["_rrf_score"] = score
             reranked.append(doc)
-        print(
-            "RRF 重排: 语义检索 %d 个, BM25 %d 个, 合并后 %d 个" % (
-                len(vector_docs), len(bm25_docs), len(reranked)
-            )
-        )
+        # print(
+        #     "RRF 重排: 语义检索 %d 个, BM25 %d 个, 合并后 %d 个" % (
+        #         len(vector_docs), len(bm25_docs), len(reranked)
+        #     )
+        # )
         return reranked
 
     async def search_with_filter(
