@@ -62,6 +62,33 @@ def print_report(report: BenchmarkReport, console: Console | None = None) -> Non
 
     console.print(table)
 
+    # ---- 难度分层对比表 ----
+    diffs = ["简单", "中等", "复杂"]
+    for diff in diffs:
+        has_data = any(
+            vr.ragas_by_difficulty.get(diff, {}).get("faithfulness", 0) > 0
+            for vr in report.versions
+        )
+        if not has_data:
+            continue
+        dt = Table(title=f"难度: {diff}")
+        dt.add_column("指标", style="cyan")
+        for vr in report.versions:
+            dt.add_column(vr.agent_version.upper(), justify="right")
+
+        _add_metric_row(dt, "Faithfulness",
+            [vr.ragas_by_difficulty.get(diff, {}).get("faithfulness", 0) for vr in report.versions],
+            fmt=".1%")
+        _add_metric_row(dt, "Answer Relevance",
+            [vr.ragas_by_difficulty.get(diff, {}).get("answer_relevance", 0) for vr in report.versions],
+            fmt=".1%")
+        _add_metric_row(dt, "Context Relevance",
+            [vr.ragas_by_difficulty.get(diff, {}).get("context_relevance", 0) for vr in report.versions],
+            fmt=".1%")
+
+        console.print()
+        console.print(dt)
+
     # ---- 趋势摘要 ----
     console.print("\n[bold]趋势: 本次 vs 上次[/bold]")
     db = BenchmarkDB()
@@ -125,6 +152,7 @@ def save_json_report(report: BenchmarkReport) -> str:
                 "faithfulness": vr.ragas_faithfulness,
                 "answer_relevance": vr.ragas_answer_relevance,
                 "context_relevance": vr.ragas_context_relevance,
+                "by_difficulty": vr.ragas_by_difficulty,
             },
             "passed": report.passed_map.get(vr.agent_version, False),
         }
