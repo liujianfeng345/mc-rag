@@ -115,6 +115,7 @@ CONTEXT_RELEVANCE_EXTRACT_PROMPT = """你的任务是从给定的文档上下文
 class RAGASMetrics:
     """单条问答的生成质量指标。"""
     question: str
+    difficulty: str = ""  # 来自 EvalItem.difficulty
     faithfulness: float = 0.0          # 忠实度 0~1
     answer_relevance: float = 0.0     # 答案相关性 0~1
     context_relevance: float = 0.0    # 上下文相关性 0~1
@@ -142,6 +143,23 @@ class RAGASResult:
     def avg_context_relevance(self) -> float:
         vals = [m.context_relevance for m in self.metrics if m.error == ""]
         return float(np.mean(vals)) if vals else 0.0
+
+    @property
+    def by_difficulty(self) -> dict[str, "RAGASResult"]:
+        """按难度分组返回各自的 RAGASResult。"""
+        groups: dict[str, list[RAGASMetrics]] = {"简单": [], "中等": [], "复杂": [], "未分类": []}
+        for m in self.metrics:
+            key = m.difficulty or "未分类"
+            groups.setdefault(key, []).append(m)
+        result: dict[str, "RAGASResult"] = {}
+        for diff, metrics_list in groups.items():
+            if not metrics_list:
+                continue
+            result[diff] = RAGASResult(
+                dataset_name=f"{self.dataset_name} ({diff})",
+                metrics=metrics_list,
+            )
+        return result
 
     def rich_table(self) -> Table:
         table = Table(title=f"生成质量评测: {self.dataset_name}")
@@ -237,10 +255,12 @@ class RAGASEvaluator:
 
             try:
                 metrics = await self._evaluate_single(item)
+                metrics.difficulty = item.difficulty  # 补写难度
                 all_metrics.append(metrics)
             except Exception as e:
                 all_metrics.append(RAGASMetrics(
                     question=item.question,
+                    difficulty=item.difficulty,
                     error=str(e),
                 ))
                 if console:
