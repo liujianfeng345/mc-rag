@@ -44,6 +44,19 @@ def _check_version(
     all_ok &= _check_metric("answer_relevance", vr.ragas_answer_relevance, baselines, last_run)
     all_ok &= _check_metric("context_relevance", vr.ragas_context_relevance, baselines, last_run)
 
+    # 难度分层指标检查
+    for diff in ["简单", "中等", "复杂"]:
+        bd = vr.ragas_by_difficulty.get(diff, {})
+        if not bd:
+            continue
+        for metric in ["faithfulness", "answer_relevance", "context_relevance"]:
+            value = bd.get(metric, 0)
+            cfg = baselines.get(f"{metric}_{diff}")
+            if cfg is None:
+                cfg = baselines.get(metric)  # fallback 到通用阈值
+            if cfg is not None and value < cfg["min_threshold"]:
+                all_ok = False
+
     return all_ok
 
 
