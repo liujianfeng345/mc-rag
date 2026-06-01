@@ -37,6 +37,7 @@ class EvalItem:
             question=data["question"],
             relevant_sources=data.get("relevant_sources", []),
             golden_answer=data.get("golden_answer", ""),
+            difficulty=data.get("difficulty", ""),
         )
 
 
