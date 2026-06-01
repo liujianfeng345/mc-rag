@@ -4,21 +4,24 @@
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"
     ],
-    "golden_answer": "在behavior中新建netease_items_beh目录创建JSON定义物品（含identifier和component）；在resource包中将贴图放入textures/items并新建item_texture.json配置贴图映射；在resource中新建netease_items_res配置物品表现属性；在texts/zh_CN.lang中配置物品中文名称，键格式为item.物品identifier.name。"
+    "golden_answer": "在behavior中新建netease_items_beh目录创建JSON定义物品（含identifier和component）；在resource包中将贴图放入textures/items并新建item_texture.json配置贴图映射；在resource中新建netease_items_res配置物品表现属性；在texts/zh_CN.lang中配置物品中文名称，键格式为item.物品identifier.name。",
+    "difficulty": "中等"
   },
   {
     "question": "自定义物品的identifier命名规则是什么？为什么不能用大写字母？",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"
     ],
-    "golden_answer": "identifier分为命名空间及物品名，命名空间推荐与mod名称一致，必须全局唯一。identifier由小写字母以及下划线组成，请勿使用大写字母。如果使用大写字母或特殊字符可能导致物品注册失败。"
+    "golden_answer": "identifier分为命名空间及物品名，命名空间推荐与mod名称一致，必须全局唯一。identifier由小写字母以及下划线组成，请勿使用大写字母。如果使用大写字母或特殊字符可能导致物品注册失败。",
+    "difficulty": "中等"
   },
   {
     "question": "netease:weapon组件包含哪些必填和可选字段？每个字段的作用是什么？",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/2-自定义武器及工具.md"
     ],
-    "golden_answer": "必填：type（武器类型：sword/shovel/pickaxe/hatchet/hoe）、level（挖掘等级，影响铁砧修复材料）、attack_damage（攻击伤害）、enchantment（附魔能力）。可选：speed（基础挖掘速度，默认0）。level值与修复材料对应：0→木板/金锭，1→石头，2→铁锭，3→钻石，>3无法铁砧修复。"
+    "golden_answer": "必填：type（武器类型：sword/shovel/pickaxe/hatchet/hoe）、level（挖掘等级，影响铁砧修复材料）、attack_damage（攻击伤害）、enchantment（附魔能力）。可选：speed（基础挖掘速度，默认0）。level值与修复材料对应：0→木板/金锭，1→石头，2→铁锭，3→钻石，>3无法铁砧修复。",
+    "difficulty": "中等"
   },
   {
     "question": "自定义武器的type值与自定义附魔槽位之间的对应关系是什么？",
@@ -26,7 +29,8 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/2-自定义武器及工具.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"
     ],
-    "golden_answer": "sword→sword、shovel→shovel、pickaxe→pickaxe、hatchet→axe（注意类型名是hatchet但槽位是axe）、hoe→hoe。自定义武器支持原生附魔和自定义附魔，在注册自定义附魔时primary_slots需匹配武器type对应的槽位名。"
+    "golden_answer": "sword→sword、shovel→shovel、pickaxe→pickaxe、hatchet→axe（注意类型名是hatchet但槽位是axe）、hoe→hoe。自定义武器支持原生附魔和自定义附魔，在注册自定义附魔时primary_slots需匹配武器type对应的槽位名。",
+    "difficulty": "中等"
   },
   {
     "question": "如何注册一个自定义盔甲？与基础物品相比多了哪些步骤？",
@@ -34,28 +38,32 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/3-自定义盔甲.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"
     ],
-    "golden_answer": "在前6步与基础物品相同的基础上，额外需要：custom_item_type设为armor；在behavior/netease_items_beh中添加netease:armor组件（配置defense/enchantment/armor_slot等）；在resource下创建attachables目录并配置模型描述文件（含materials/textures/geometry/render_controllers）；在resource/models/entity下添加geometry模型文件。"
+    "golden_answer": "在前6步与基础物品相同的基础上，额外需要：custom_item_type设为armor；在behavior/netease_items_beh中添加netease:armor组件（配置defense/enchantment/armor_slot等）；在resource下创建attachables目录并配置模型描述文件（含materials/textures/geometry/render_controllers）；在resource/models/entity下添加geometry模型文件。",
+    "difficulty": "中等"
   },
   {
     "question": "netease:armor组件有哪些参数？armor_slot的值分别对应什么装备部位？",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/3-自定义盔甲.md"
     ],
-    "golden_answer": "参数包括：defense（防御值，int）、enchantment（附魔能力，int）、armor_slot（槽位，0=HEAD头盔/1=BODY胸甲/2=LEG护腿/3=FOOT靴子）、toughness（盔甲韧性，0~20）、knockback_resistance（击退抗性，0~1）。其中toughness和knockback_resistance是可选的。"
+    "golden_answer": "参数包括：defense（防御值，int）、enchantment（附魔能力，int）、armor_slot（槽位，0=HEAD头盔/1=BODY胸甲/2=LEG护腿/3=FOOT靴子）、toughness（盔甲韧性，0~20）、knockback_resistance（击退抗性，0~1）。其中toughness和knockback_resistance是可选的。",
+    "difficulty": "中等"
   },
   {
     "question": "自定义附魔注册时的cost数组与max_level之间有什么关系？如果两者不一致会发生什么？",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"
     ],
-    "golden_answer": "cost数组的每个元素对应各威力等级的经验消耗，会影响附魔台上被附魔到该魔咒的概率（cost越大概率越小）以及砂轮移除时返还的经验值。列表内元素数量需与max_level一致，否则注册失败。"
+    "golden_answer": "cost数组的每个元素对应各威力等级的经验消耗，会影响附魔台上被附魔到该魔咒的概率（cost越大概率越小）以及砂轮移除时返还的经验值。列表内元素数量需与max_level一致，否则注册失败。",
+    "difficulty": "中等"
   },
   {
     "question": "铁砧结合附魔物品的经验消耗如何计算？以一把带有锋利(common,level=3)和火焰附加(rare,level=2)的剑为例，计算其total_cost。",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"
     ],
-    "golden_answer": "锋利(common)→cost=1，火焰附加(rare)→cost=4。total_cost = 1×3 + 4×2 = 11。如果是附魔书则cost减半：total_cost = max(1,1/2)×3 + max(1,4/2)×2 = 1×3 + 2×2 = 7。铁砧最终消耗还需考虑物品1和产物cost差值。"
+    "golden_answer": "锋利(common)→cost=1，火焰附加(rare)→cost=4。total_cost = 1×3 + 4×2 = 11。如果是附魔书则cost减半：total_cost = max(1,1/2)×3 + max(1,4/2)×2 = 1×3 + 2×2 = 7。铁砧最终消耗还需考虑物品1和产物cost差值。",
+    "difficulty": "复杂"
   },
   {
     "question": "如何创建一个既有自定义附魔又能在村民交易中出售的自定义武器？需要涉及哪些配置？",
@@ -64,14 +72,16 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"
     ],
-    "golden_answer": "1)按自定义武器流程注册物品，配置netease:weapon组件；2)在netease_enchants文件夹注册自定义附魔，primary_slots匹配武器type对应的槽位；3)在trading目录配置村民交易JSON，将gives中的item设为该武器identifier，通过enchant_with_levels或specific_enchants函数控制附魔；4)确保附魔的is_lootable为true（如需图书管理员交易）。"
+    "golden_answer": "1)按自定义武器流程注册物品，配置netease:weapon组件；2)在netease_enchants文件夹注册自定义附魔，primary_slots匹配武器type对应的槽位；3)在trading目录配置村民交易JSON，将gives中的item设为该武器identifier，通过enchant_with_levels或specific_enchants函数控制附魔；4)确保附魔的is_lootable为true（如需图书管理员交易）。",
+    "difficulty": "复杂"
   },
   {
     "question": "自定义远程武器注册时，identifier有什么特殊要求？为什么？",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/6-自定义远程武器.md"
     ],
-    "golden_answer": "自定义可蓄力物品的identifier必须以:bow结尾（如customrangedweapon:bow），否则第三人称下的抬手动作不会生效。custom_item_type需设为ranged_weapon。use_duration控制蓄力时长，影响抬手动作速度，如未配置则蓄力无上限且动画不播放。"
+    "golden_answer": "自定义可蓄力物品的identifier必须以:bow结尾（如customrangedweapon:bow），否则第三人称下的抬手动作不会生效。custom_item_type需设为ranged_weapon。use_duration控制蓄力时长，影响抬手动作速度，如未配置则蓄力无上限且动画不播放。",
+    "difficulty": "中等"
   },
   {
     "question": "如何配置自定义远程武器的序列帧动画？需要修改哪些文件？",
@@ -79,28 +89,32 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/6-自定义远程武器.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/5-自定义蓄力物品.md"
     ],
-    "golden_answer": "1)将序列帧贴图放入textures/items（如_0,_1,_2后缀）；2)在item_texture.json中定义序列帧数组映射（texture_name对应数组）；3)在netease_items_res的JSON中使用netease:frame_animation组件，配置frame_count（帧数）、texture_name（映射名）、animate_in_toolbar（物品栏是否动画）。use_duration的大小应与序列帧帧数匹配。"
+    "golden_answer": "1)将序列帧贴图放入textures/items（如_0,_1,_2后缀）；2)在item_texture.json中定义序列帧数组映射（texture_name对应数组）；3)在netease_items_res的JSON中使用netease:frame_animation组件，配置frame_count（帧数）、texture_name（映射名）、animate_in_toolbar（物品栏是否动画）。use_duration的大小应与序列帧帧数匹配。",
+    "difficulty": "中等"
   },
   {
     "question": "自定义盾牌如何配置特定伤害类型的防御和不防御？netease:shield组件有哪些关键参数？",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/8-自定义盾牌.md"
     ],
-    "golden_answer": "netease:shield组件参数：defence_damage_source_list（防御的伤害类型列表，为空则走原生格挡逻辑）、undefence_damage_source_list（不防御的伤害类型，不能与防御列表有相同元素，有相同则优先防御）、is_consume_damage（是否消耗耐久，默认true）。注意：暂不支持抵御火烧、自杀、凋零伤害。"
+    "golden_answer": "netease:shield组件参数：defence_damage_source_list（防御的伤害类型列表，为空则走原生格挡逻辑）、undefence_damage_source_list（不防御的伤害类型，不能与防御列表有相同元素，有相同则优先防御）、is_consume_damage（是否消耗耐久，默认true）。注意：暂不支持抵御火烧、自杀、凋零伤害。",
+    "difficulty": "中等"
   },
   {
     "question": "自定义盾牌的抵挡范围如何通过物品字典参数配置？默认范围和自定义范围有什么不同？",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/8-自定义盾牌.md"
     ],
-    "golden_answer": "通过SpawnItemToPlayerInv等接口生成物品时，在itemDict中设置shieldDefenceAngleLeft和shieldDefenceAngleRight参数。默认范围是[-90°,90°]（全正面），可自定义为任意[-180,180]范围，但left必须小于right。例如left=-45,right=30时，只有前方-45°到30°范围可格挡。"
+    "golden_answer": "通过SpawnItemToPlayerInv等接口生成物品时，在itemDict中设置shieldDefenceAngleLeft和shieldDefenceAngleRight参数。默认范围是[-90°,90°]（全正面），可自定义为任意[-180,180]范围，但left必须小于right。例如left=-45,right=30时，只有前方-45°到30°范围可格挡。",
+    "difficulty": "中等"
   },
   {
     "question": "自定义配方支持哪些类型？有序配方和无序配方在配置上有什么区别？",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/5-自定义配方.md"
     ],
-    "golden_answer": "五种类型：minecraft:recipe_shaped（工作台有序合成，用pattern数组+key映射）、minecraft:recipe_shapeless（工作台无序合成，用ingredients数组，1-9个原料）、minecraft:recipe_furnace（熔炉，input→output）、minecraft:recipe_brewing_mix（酿造台混合，input+reagent→output）、minecraft:recipe_brewing_container（酿造台换容）。有序配方支持pattern定义2×2或3×3图案，无序配方不关心排列。"
+    "golden_answer": "五种类型：minecraft:recipe_shaped（工作台有序合成，用pattern数组+key映射）、minecraft:recipe_shapeless（工作台无序合成，用ingredients数组，1-9个原料）、minecraft:recipe_furnace（熔炉，input→output）、minecraft:recipe_brewing_mix（酿造台混合，input+reagent→output）、minecraft:recipe_brewing_container（酿造台换容）。有序配方支持pattern定义2×2或3×3图案，无序配方不关心排列。",
+    "difficulty": "中等"
   },
   {
     "question": "有序配方中的pattern和key字段如何使用？用一个自定义武器+附魔材料的合成配方举例说明。",
@@ -108,7 +122,8 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/5-自定义配方.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/2-自定义武器及工具.md"
     ],
-    "golden_answer": "pattern是字符串数组描述合成图案，空格代表空栏位，其他字符作为key。key将图案字符映射到具体物品（item+可选data）。例如合成一把剑：pattern=[\"#\",\"#\",\"S\"]表示竖排合成，key中\"#\"→铁锭，\"S\"→木棍，result→自定义剑identifier。配方identifier需全局唯一，重复会报错。"
+    "golden_answer": "pattern是字符串数组描述合成图案，空格代表空栏位，其他字符作为key。key将图案字符映射到具体物品（item+可选data）。例如合成一把剑：pattern=[\"#\",\"#\",\"S\"]表示竖排合成，key中\"#\"→铁锭，\"S\"→木棍，result→自定义剑identifier。配方identifier需全局唯一，重复会报错。",
+    "difficulty": "中等"
   },
   {
     "question": "如何用战利品表让怪物掉落带有随机自定义附魔的装备？需要配置哪些函数？",
@@ -116,7 +131,8 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"
     ],
-    "golden_answer": "在战利品表JSON的entries中使用functions数组：1)enchant_randomly函数（随机附魔，levels 1-30随机，treasure控制宝藏附魔）；2)enchant_with_levels函数（指定附魔等级，levels+treasure参数）；3)specific_enchants函数（指定具体附魔id和level范围）；4)enchant_random_gear函数（随机附魔装备，chance控制概率）。将item的name设为自定义装备identifier即可。"
+    "golden_answer": "在战利品表JSON的entries中使用functions数组：1)enchant_randomly函数（随机附魔，levels 1-30随机，treasure控制宝藏附魔）；2)enchant_with_levels函数（指定附魔等级，levels+treasure参数）；3)specific_enchants函数（指定具体附魔id和level范围）；4)enchant_random_gear函数（随机附魔装备，chance控制概率）。将item的name设为自定义装备identifier即可。",
+    "difficulty": "中等"
   },
   {
     "question": "自定义3D物品需要创建哪些资源文件？attachable文件中的关键字段分别控制什么？",
@@ -124,14 +140,16 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/9-自定义3D物品/1-自定义3D物品（一）.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"
     ],
-    "golden_answer": "需要：1)attachables文件夹下的JSON（关联模型与物品identifier）；2)models/entity下geometry模型文件；3)textures下贴图文件；4)netease_items_beh下行为定义（含weapon组件）；5)netease_items_res下资源定义（含icon贴图）。attachable的关键字段：materials（default和enchanted的材质）、textures（default贴图和enchanted附魔光效）、geometry（3D模型标识符）、render_controllers（渲染控制器）。"
+    "golden_answer": "需要：1)attachables文件夹下的JSON（关联模型与物品identifier）；2)models/entity下geometry模型文件；3)textures下贴图文件；4)netease_items_beh下行为定义（含weapon组件）；5)netease_items_res下资源定义（含icon贴图）。attachable的关键字段：materials（default和enchanted的材质）、textures（default贴图和enchanted附魔光效）、geometry（3D模型标识符）、render_controllers（渲染控制器）。",
+    "difficulty": "中等"
   },
   {
     "question": "自定义3D武器模型时，如何确保模型在第三人称手持时位置正确？",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/9-自定义3D物品/1-自定义3D物品（一）.md"
     ],
-    "golden_answer": "遵循玩家模型骨骼布局，将物品模型基骨骼放入root→waist→body→rightArm→rightItem骨骼下（右手持）。使用BlockBench的导入功能将物品模型导入人型模型工程，调整至满意角度后删除右手方块体。leftItem对应左手位置。推荐使用玩家骨骼树状图确保跟随肢体动画正常摆动。"
+    "golden_answer": "遵循玩家模型骨骼布局，将物品模型基骨骼放入root→waist→body→rightArm→rightItem骨骼下（右手持）。使用BlockBench的导入功能将物品模型导入人型模型工程，调整至满意角度后删除右手方块体。leftItem对应左手位置。推荐使用玩家骨骼树状图确保跟随肢体动画正常摆动。",
+    "difficulty": "中等"
   },
   {
     "question": "设计一个完整的自定义武器+盔甲套装方案：剑、头盔、胸甲都需要支持自定义附魔，盔甲各部位应如何配置对应的附魔槽位？",
@@ -140,7 +158,8 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/2-自定义武器及工具.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"
     ],
-    "golden_answer": "剑：custom_item_type=weapon，netease:weapon的type=sword→对应附魔槽位sword。头盔：custom_item_type=armor，netease:armor的armor_slot=0(HEAD)→对应槽位armor_head。胸甲：armor_slot=1(BODY)→对应槽位armor_torso。每个自定义附魔的primary_slots需填对应槽位。盔甲也可配置enchantment和defense值。所有物品的identifier需全局唯一。"
+    "golden_answer": "剑：custom_item_type=weapon，netease:weapon的type=sword→对应附魔槽位sword。头盔：custom_item_type=armor，netease:armor的armor_slot=0(HEAD)→对应槽位armor_head。胸甲：armor_slot=1(BODY)→对应槽位armor_torso。每个自定义附魔的primary_slots需填对应槽位。盔甲也可配置enchantment和defense值。所有物品的identifier需全局唯一。",
+    "difficulty": "复杂"
   },
   {
     "question": "假设你要创建一个能发射自定义箭的远程武器，需要配置哪些文件？从物品注册到抛射物发射的完整链路是什么？",
@@ -148,14 +167,16 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/6-自定义远程武器.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/5-自定义蓄力物品.md"
     ],
-    "golden_answer": "1)behavior/netease_items_beh下创建武器JSON（identifier:bow结尾、custom_item_type=ranged_weapon、use_duration、netease:render_offsets）；2)behavior/entities下创建抛射物entity定义（netease:custom_entity_type=projectile_entity、netease:pick_up配置捡起物品）；3)resource方配置序列帧动画、贴图、模型、动画、渲染控制器；4)python脚本中监听RangedWeaponReleaseUsingServerEvent，使用projectile组件的CreateProjectileEntity接口发射。"
+    "golden_answer": "1)behavior/netease_items_beh下创建武器JSON（identifier:bow结尾、custom_item_type=ranged_weapon、use_duration、netease:render_offsets）；2)behavior/entities下创建抛射物entity定义（netease:custom_entity_type=projectile_entity、netease:pick_up配置捡起物品）；3)resource方配置序列帧动画、贴图、模型、动画、渲染控制器；4)python脚本中监听RangedWeaponReleaseUsingServerEvent，使用projectile组件的CreateProjectileEntity接口发射。",
+    "difficulty": "复杂"
   },
   {
     "question": "如何配置一个自定义盾牌，使其能格挡近战攻击但不格挡弹射物和爆炸伤害，并且不消耗耐久？",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/8-自定义盾牌.md"
     ],
-    "golden_answer": "netease:shield组件配置：defence_damage_source_list包含\"entity_attack\"（防御近战）、undefence_damage_source_list包含\"projectile\"和\"block_explosion\"（不防御弹射物和爆炸）、is_consume_damage设为false（不消耗耐久）。如有相同元素在两个列表中，优先防御。另外可通过SetItemDefenceAngle接口自定义格挡角度范围。"
+    "golden_answer": "netease:shield组件配置：defence_damage_source_list包含\"entity_attack\"（防御近战）、undefence_damage_source_list包含\"projectile\"和\"block_explosion\"（不防御弹射物和爆炸）、is_consume_damage设为false（不消耗耐久）。如有相同元素在两个列表中，优先防御。另外可通过SetItemDefenceAngle接口自定义格挡角度范围。",
+    "difficulty": "复杂"
   },
   {
     "question": "装备同一套自定义盔甲（头、胸、腿、脚）时，各个部位的附魔效果能否叠加？四个部位对应的附魔槽位和armor_slot值分别是什么？",
@@ -163,7 +184,8 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/3-自定义盔甲.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"
     ],
-    "golden_answer": "可以叠加，不同部位的相同附魔效果独立生效。对应关系：头盔armor_slot=0→armor_head、胸甲armor_slot=1→armor_torso、护腿armor_slot=2→armor_legs、靴子armor_slot=3→armor_feet。每个部位通过netease:armor组件配置defense（防御值）、toughness（韧性）、knockback_resistance（击退抗性）。附魔注册时primary_slots填对应槽位名即可限定可附魔部位。"
+    "golden_answer": "可以叠加，不同部位的相同附魔效果独立生效。对应关系：头盔armor_slot=0→armor_head、胸甲armor_slot=1→armor_torso、护腿armor_slot=2→armor_legs、靴子armor_slot=3→armor_feet。每个部位通过netease:armor组件配置defense（防御值）、toughness（韧性）、knockback_resistance（击退抗性）。附魔注册时primary_slots填对应槽位名即可限定可附魔部位。",
+    "difficulty": "复杂"
   },
   {
     "question": "如何通过战利品表和村民交易两种途径，让玩家获得带有指定自定义附魔的装备？比较两种途径的配置差异。",
@@ -171,7 +193,8 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"
     ],
-    "golden_answer": "战利品表：在loot_tables中配置，使用specific_enchants函数指定附魔id和level范围，可精确控制附魔内容和等级，支持宝藏附魔。村民交易：在trading目录配置交易JSON，使用enchant_book_for_trading函数（图书管理员）或enchant_with_levels函数（武器商等），附魔随机选取is_lootable=true的且非灵魂疾行，宝藏附魔价格翻倍。两种途径都支持自定义物品identifier。"
+    "golden_answer": "战利品表：在loot_tables中配置，使用specific_enchants函数指定附魔id和level范围，可精确控制附魔内容和等级，支持宝藏附魔。村民交易：在trading目录配置交易JSON，使用enchant_book_for_trading函数（图书管理员）或enchant_with_levels函数（武器商等），附魔随机选取is_lootable=true的且非灵魂疾行，宝藏附魔价格翻倍。两种途径都支持自定义物品identifier。",
+    "difficulty": "复杂"
   },
   {
     "question": "自定义远程武器中，use_duration的值应该根据什么来确定？如果设置不当会有什么后果？",
@@ -179,14 +202,16 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/6-自定义远程武器.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/5-自定义蓄力物品.md"
     ],
-    "golden_answer": "use_duration的值应与序列帧动画的帧数相匹配，影响第三人称抬手速度（值越大抬手越慢）。如果未配置minecraft:use_duration，蓄力时间无上限且不会播放动画，ItemReleaseUsing事件返回的durationLeft为负数。帧动画通过netease:frame_animation的frame_count定义帧数，texture_name指定item_texture.json中的序列帧数组。"
+    "golden_answer": "use_duration的值应与序列帧动画的帧数相匹配，影响第三人称抬手速度（值越大抬手越慢）。如果未配置minecraft:use_duration，蓄力时间无上限且不会播放动画，ItemReleaseUsing事件返回的durationLeft为负数。帧动画通过netease:frame_animation的frame_count定义帧数，texture_name指定item_texture.json中的序列帧数组。",
+    "difficulty": "中等"
   },
   {
     "question": "自定义生物蛋的netease:egg组件中entity字段的格式是什么？如何让它生成一个自定义生物？",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/4-自定义生物蛋.md"
     ],
-    "golden_answer": "entity字段格式为\"minecraft:mod{自定义生物identifier}\"，如\"entity\":\"minecraft:mod{customitems:chicken}\"。custom_item_type需设为egg。注册步骤与基础物品相同（1-6步），额外在behavior的JSON中添加netease:egg组件。支持刷怪箱和发射器使用。"
+    "golden_answer": "entity字段格式为\"minecraft:mod{自定义生物identifier}\"，如\"entity\":\"minecraft:mod{customitems:chicken}\"。custom_item_type需设为egg。注册步骤与基础物品相同（1-6步），额外在behavior的JSON中添加netease:egg组件。支持刷怪箱和发射器使用。",
+    "difficulty": "中等"
   },
   {
     "question": "在自定义3D武器上应用自定义附魔后，附魔光效是如何显示的？attachable文件中需要配置什么？",
@@ -194,7 +219,8 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/9-自定义3D物品/1-自定义3D物品（一）.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"
     ],
-    "golden_answer": "attachable文件中materials需配置\"default\":\"entity_alphatest\"和\"enchanted\":\"entity_alphatest_glint\"，textures中\"enchanted\"填写\"textures/misc/enchanted_item_glint\"（原版附魔光效贴图）。当自定义附魔通过netease:weapon的enchantment字段或铁砧应用到3D武器时，渲染控制器会自动切换使用enchanted材质和贴图。"
+    "golden_answer": "attachable文件中materials需配置\"default\":\"entity_alphatest\"和\"enchanted\":\"entity_alphatest_glint\"，textures中\"enchanted\"填写\"textures/misc/enchanted_item_glint\"（原版附魔光效贴图）。当自定义附魔通过netease:weapon的enchantment字段或铁砧应用到3D武器时，渲染控制器会自动切换使用enchanted材质和贴图。",
+    "difficulty": "中等"
   },
   {
     "question": "自定义配方中，有序合成如何实现「消耗带特定耐久范围的原料生产带随机耐久的产物」？",
@@ -202,7 +228,8 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/5-自定义配方.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/2-自定义武器及工具.md"
     ],
-    "golden_answer": "在有序或无序配方的key或ingredients中，对支持耐久的物品添加\"durability\":[min,max]字段，如\"durability\":[1,1560]表示接受耐久度在1到1560之间的该物品。result中也支持\"durability\":[min,max]，合成产物的耐久度在范围内随机取值，超过物品最大耐久则以最大耐久为准。工作台预览显示的耐久度为随机值，取出时最终确定。"
+    "golden_answer": "在有序或无序配方的key或ingredients中，对支持耐久的物品添加\"durability\":[min,max]字段，如\"durability\":[1,1560]表示接受耐久度在1到1560之间的该物品。result中也支持\"durability\":[min,max]，合成产物的耐久度在范围内随机取值，超过物品最大耐久则以最大耐久为准。工作台预览显示的耐久度为随机值，取出时最终确定。",
+    "difficulty": "复杂"
   },
   {
     "question": "设计一个带序列帧蓄力动画、能发射自定义抛射物的远程武器，需要涉及哪些目录和文件？逐一列出。",
@@ -210,7 +237,8 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/6-自定义远程武器.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/5-自定义蓄力物品.md"
     ],
-    "golden_answer": "行为包：behavior/netease_items_beh/武器JSON（ranged_weapon类型）、behavior/entities/抛射物entity JSON（projectile_entity类型+pick_up配置）。资源包：resource/netease_items_res/武器表现JSON（frame_animation+use_animation）、resource/textures/items/序列帧贴图、resource/textures/item_texture.json（帧数组映射）、resource/textures/entity/抛射物贴图、resource/models/entity/抛射物geo模型、resource/animations/抛射物动画、resource/render_controllers/抛射物渲染控制器、resource/entity/抛射物client_entity JSON。"
+    "golden_answer": "行为包：behavior/netease_items_beh/武器JSON（ranged_weapon类型）、behavior/entities/抛射物entity JSON（projectile_entity类型+pick_up配置）。资源包：resource/netease_items_res/武器表现JSON（frame_animation+use_animation）、resource/textures/items/序列帧贴图、resource/textures/item_texture.json（帧数组映射）、resource/textures/entity/抛射物贴图、resource/models/entity/抛射物geo模型、resource/animations/抛射物动画、resource/render_controllers/抛射物渲染控制器、resource/entity/抛射物client_entity JSON。",
+    "difficulty": "复杂"
   },
   {
     "question": "要创建一个同时具有「防火」「副手可用」「可堆肥」「有耐久」「可附魔」属性的自定义物品，需要组合哪些组件？",
@@ -218,7 +246,8 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"
     ],
-    "golden_answer": "组合使用：netease:fire_resistant(value:true)防火、netease:allow_offhand(value:true)副手、netease:compostable(数值)堆肥、minecraft:max_damage(数值)耐久、netease:enchant_material(value:true)可作为附魔材料。注意allow_offhand不支持foil和render_offsets组件，fire_resistant格式和其他网易组件一样多一层value键。"
+    "golden_answer": "组合使用：netease:fire_resistant(value:true)防火、netease:allow_offhand(value:true)副手、netease:compostable(数值)堆肥、minecraft:max_damage(数值)耐久、netease:enchant_material(value:true)可作为附魔材料。注意allow_offhand不支持foil和render_offsets组件，fire_resistant格式和其他网易组件一样多一层value键。",
+    "difficulty": "复杂"
   },
   {
     "question": "村民交易中，如何配置武器商出售带有随机附魔的自定义剑？写出交易JSON的关键结构。",
@@ -226,35 +255,40 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/2-自定义武器及工具.md"
     ],
-    "golden_answer": "在trading目录创建JSON，结构为tiers→groups→trades：wants中配置第一个物品（item+quantity+price_multiplier）和可选的第二个物品；gives中配置自定义剑identifier，functions使用enchant_with_levels函数（levels设{min:5,max:19}区间，treasure控制宝藏附魔）。还可配置trader_exp（村民经验）、max_uses（最大交易次数）、reward_exp（是否给玩家经验）。"
+    "golden_answer": "在trading目录创建JSON，结构为tiers→groups→trades：wants中配置第一个物品（item+quantity+price_multiplier）和可选的第二个物品；gives中配置自定义剑identifier，functions使用enchant_with_levels函数（levels设{min:5,max:19}区间，treasure控制宝藏附魔）。还可配置trader_exp（村民经验）、max_uses（最大交易次数）、reward_exp（是否给玩家经验）。",
+    "difficulty": "中等"
   },
   {
     "question": "自定义远程武器的抛射物如何配置方向性旋转？query.target_x_rotation和query.target_y_rotation的作用是什么？",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/6-自定义远程武器.md"
     ],
-    "golden_answer": "在抛射物的animation JSON中，通过bones的rotation字段使用Molang表达式：\"rotation\":[\"variable.shake_power - query.target_x_rotation\",\"-query.target_y_rotation\",0.0]。query.target_x_rotation返回抛射物在x方向的旋转角度，query.target_y_rotation返回y方向。variable.shake_power是自定义变量用于碰撞抖动效果。scale可调整模型大小如[0.7,0.7,0.9]。"
+    "golden_answer": "在抛射物的animation JSON中，通过bones的rotation字段使用Molang表达式：\"rotation\":[\"variable.shake_power - query.target_x_rotation\",\"-query.target_y_rotation\",0.0]。query.target_x_rotation返回抛射物在x方向的旋转角度，query.target_y_rotation返回y方向。variable.shake_power是自定义变量用于碰撞抖动效果。scale可调整模型大小如[0.7,0.7,0.9]。",
+    "difficulty": "中等"
   },
   {
     "question": "为自定义盔甲配置attachables时，identifier、geometry、textures和materials如何协调工作？以一件自定义头盔为例。",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/3-自定义盔甲.md"
     ],
-    "golden_answer": "identifier与行为包中物品identifier一致（如customitems:modarmor1）。geometry/default指向models/entity下的geo文件中的模型标识符（如geometry.customitems_modarmor1）。textures/default指向盔甲贴图路径，textures/enchanted指向附魔光效。materials中default通常用armor（原生材质），enchanted用armor_enchanted。scripts/parent_setup设置部位可见性变量（如variable.helmet_layer_visible=0隐藏玩家头盔层）。render_controllers填[\"controller.render.armor\"]。"
+    "golden_answer": "identifier与行为包中物品identifier一致（如customitems:modarmor1）。geometry/default指向models/entity下的geo文件中的模型标识符（如geometry.customitems_modarmor1）。textures/default指向盔甲贴图路径，textures/enchanted指向附魔光效。materials中default通常用armor（原生材质），enchanted用armor_enchanted。scripts/parent_setup设置部位可见性变量（如variable.helmet_layer_visible=0隐藏玩家头盔层）。render_controllers填[\"controller.render.armor\"]。",
+    "difficulty": "中等"
   },
   {
     "question": "自定义盾牌的Python绑定流程是怎样的？如何在玩家装备自定义盾牌时播放正确的格挡动画？",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/8-自定义盾牌.md"
     ],
-    "golden_answer": "在AddPlayerCreatedClientEvent事件回调中：1)使用CreateActorRender创建动画组件；2)AddPlayerAnimation添加自定义动画（animationKey需唯一，animationName可用原版或自定义）；3)AddPlayerAnimationIntoState将动画绑定到特定状态（root→third_person），通过Molang条件判断（如query.blocking && query.get_equipped_item_full_name('off_hand')=='自定义盾牌identifier'）决定何时播放。需区分主手和副手持盾的情况。"
+    "golden_answer": "在AddPlayerCreatedClientEvent事件回调中：1)使用CreateActorRender创建动画组件；2)AddPlayerAnimation添加自定义动画（animationKey需唯一，animationName可用原版或自定义）；3)AddPlayerAnimationIntoState将动画绑定到特定状态（root→third_person），通过Molang条件判断（如query.blocking && query.get_equipped_item_full_name('off_hand')=='自定义盾牌identifier'）决定何时播放。需区分主手和副手持盾的情况。",
+    "difficulty": "中等"
   },
   {
     "question": "自定义配方中tags字段可选哪些值？如果要实现一个只能在切石机上使用的配方，应该如何配置？",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/5-自定义配方.md"
     ],
-    "golden_answer": "tags可选值：crafting_table（工作台）、stonecutter（切石机）、cartography_table（制图台）、furnace（熔炉）、blast_furnace（高炉）、smoker（烟熏炉）、campfire（营火）、brewing_stand（酿造台）。切石机配方用minecraft:recipe_shapeless类型，tags填[\"stonecutter\"]，因切石机只有一个输入格，ingredients中所有物品的count之和不能大于1。priority字段控制多个配方时的优先级。"
+    "golden_answer": "tags可选值：crafting_table（工作台）、stonecutter（切石机）、cartography_table（制图台）、furnace（熔炉）、blast_furnace（高炉）、smoker（烟熏炉）、campfire（营火）、brewing_stand（酿造台）。切石机配方用minecraft:recipe_shapeless类型，tags填[\"stonecutter\"]，因切石机只有一个输入格，ingredients中所有物品的count之和不能大于1。priority字段控制多个配方时的优先级。",
+    "difficulty": "中等"
   },
   {
     "question": "创建一个自定义3D武器需要同时在behavior和resource两侧做哪些配置？以一把自定义金剑为例列出所有文件和关键字段。",
@@ -263,7 +297,8 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/2-自定义武器及工具.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"
     ],
-    "golden_answer": "Behavior侧：netease_items_beh/custom_golden_sword.json——custom_item_type=weapon、netease:weapon(type=sword,level,attack_damage,enchantment)、minecraft:max_damage(耐久)、minecraft:max_stack_size(1)。Resource侧：netease_items_res/custom_golden_sword.json——minecraft:icon(2D图标)；attachables/custom_golden_sword.json——materials(default+enchanted)、textures(default贴图+enchanted光效)、geometry(3D模型标识符)、render_controllers；models/entity/下放geo模型JSON；textures/entity/下放贴图。"
+    "golden_answer": "Behavior侧：netease_items_beh/custom_golden_sword.json——custom_item_type=weapon、netease:weapon(type=sword,level,attack_damage,enchantment)、minecraft:max_damage(耐久)、minecraft:max_stack_size(1)。Resource侧：netease_items_res/custom_golden_sword.json——minecraft:icon(2D图标)；attachables/custom_golden_sword.json——materials(default+enchanted)、textures(default贴图+enchanted光效)、geometry(3D模型标识符)、render_controllers；models/entity/下放geo模型JSON；textures/entity/下放贴图。",
+    "difficulty": "复杂"
   },
   {
     "question": "如何使用loot_table让僵尸掉落「带有随机自定义附魔的剑」且附魔等级在5-20之间？写出战利品表的关键片段。",
@@ -271,21 +306,24 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"
     ],
-    "golden_answer": "在loot_tables/entities/zombie.json中配置：pools→entries→type:\"item\",name:自定义剑identifier→functions中使用enchant_with_levels函数，levels设置为{\"min\":5,\"max\":20}，treasure设为true或false根据是否允许宝藏附魔。如果要用指定附魔类型，改用specific_enchants函数，enchants数组每项指定id和level范围[min,max]。"
+    "golden_answer": "在loot_tables/entities/zombie.json中配置：pools→entries→type:\"item\",name:自定义剑identifier→functions中使用enchant_with_levels函数，levels设置为{\"min\":5,\"max\":20}，treasure设为true或false根据是否允许宝藏附魔。如果要用指定附魔类型，改用specific_enchants函数，enchants数组每项指定id和level范围[min,max]。",
+    "difficulty": "复杂"
   },
   {
     "question": "自定义附魔中，如何使一个附魔只能通过战利品表获取而不能通过附魔台？需要配置哪些字段？",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"
     ],
-    "golden_answer": "将is_discoverable设为false，附魔不会出现在附魔台选项中。此时只能通过：1)is_lootable=true时图书管理员交易获取；2)战利品表的specific_enchants函数指定获取。若同时is_treasure_only=true且is_discoverable=false，则仅能通过战利品表specific_enchants获取（图书管理员不会出售is_discoverable=false的非lootable附魔书）。"
+    "golden_answer": "将is_discoverable设为false，附魔不会出现在附魔台选项中。此时只能通过：1)is_lootable=true时图书管理员交易获取；2)战利品表的specific_enchants函数指定获取。若同时is_treasure_only=true且is_discoverable=false，则仅能通过战利品表specific_enchants获取（图书管理员不会出售is_discoverable=false的非lootable附魔书）。",
+    "difficulty": "复杂"
   },
   {
     "question": "酿造配方中recipe_brewing_mix和recipe_brewing_container的使用场景有什么区别？各自的核心字段是什么？",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/5-自定义配方.md"
     ],
-    "golden_answer": "recipe_brewing_mix用于改变药水效果类型（如粗制药水+烈焰粉→力量药水），核心字段：input（输入药水类型）、reagent（酿造材料）、output（输出药水类型）。recipe_brewing_container用于改变药水容器形态（如普通药水+火药→喷溅药水），核心字段同样为input+reagent+output，但output是容器不同的药水类型。注意：输出的物品无法和原来的物品堆叠。"
+    "golden_answer": "recipe_brewing_mix用于改变药水效果类型（如粗制药水+烈焰粉→力量药水），核心字段：input（输入药水类型）、reagent（酿造材料）、output（输出药水类型）。recipe_brewing_container用于改变药水容器形态（如普通药水+火药→喷溅药水），核心字段同样为input+reagent+output，但output是容器不同的药水类型。注意：输出的物品无法和原来的物品堆叠。",
+    "difficulty": "中等"
   },
   {
     "question": "如何使自定义物品既能作为熔炉燃料又能通过熔炉配方烧炼成另一个自定义物品？需要配置什么？",
@@ -293,7 +331,8 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/5-自定义配方.md"
     ],
-    "golden_answer": "在物品JSON的components中同时配置netease:fuel（duration为燃烧秒数）使其作为燃料。在netease_recipes中创建minecraft:recipe_furnace配方JSON，input填该物品identifier，output填目标物品identifier，tags填[\"furnace\"]。熔炉配方中的input和output都支持自定义物品identifier。"
+    "golden_answer": "在物品JSON的components中同时配置netease:fuel（duration为燃烧秒数）使其作为燃料。在netease_recipes中创建minecraft:recipe_furnace配方JSON，input填该物品identifier，output填目标物品identifier，tags填[\"furnace\"]。熔炉配方中的input和output都支持自定义物品identifier。",
+    "difficulty": "复杂"
   },
   {
     "question": "自定义蓄力物品与自定义远程武器是什么关系？两者在配置上有什么共同点和区别？",
@@ -301,14 +340,16 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/5-自定义蓄力物品.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/6-自定义远程武器.md"
     ],
-    "golden_answer": "蓄力物品是远程武器的组成部分。共同点：都支持netease:frame_animation序列帧、minecraft:use_duration控制蓄力时长、netease:render_offsets渲染偏移、minecraft:max_damage耐久。区别：远程武器custom_item_type=ranged_weapon且identifier必须:bow结尾；远程武器额外涉及抛射物entity定义（behavior/entities+resource/entity）、发射机制（CreateProjectileEntity接口）、视野变化控制（camera组件SetFov）。"
+    "golden_answer": "蓄力物品是远程武器的组成部分。共同点：都支持netease:frame_animation序列帧、minecraft:use_duration控制蓄力时长、netease:render_offsets渲染偏移、minecraft:max_damage耐久。区别：远程武器custom_item_type=ranged_weapon且identifier必须:bow结尾；远程武器额外涉及抛射物entity定义（behavior/entities+resource/entity）、发射机制（CreateProjectileEntity接口）、视野变化控制（camera组件SetFov）。",
+    "difficulty": "中等"
   },
   {
     "question": "自定义盾牌中使用原版动画和自定义动画有什么区别？如果想让举盾时盾牌动画正常工作，应该怎么做？",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/8-自定义盾牌.md"
     ],
-    "golden_answer": "如果防御状态的动作复用了原版动作（如animation.shield.wield_main_hand_first_person_blocking），举盾时盾牌的动画部分将会失效。为了让举盾时动画正常工作，需要使用自定义动作替代，如animation.test_shield.wield_main_hand_first_person_blocking。同时在scripts/initialize中定义variable变量控制各手持位置和旋转。通用动画控制器位于vanilla_netease/animation_controllers/shield.animation_controllers.json。"
+    "golden_answer": "如果防御状态的动作复用了原版动作（如animation.shield.wield_main_hand_first_person_blocking），举盾时盾牌的动画部分将会失效。为了让举盾时动画正常工作，需要使用自定义动作替代，如animation.test_shield.wield_main_hand_first_person_blocking。同时在scripts/initialize中定义variable变量控制各手持位置和旋转。通用动画控制器位于vanilla_netease/animation_controllers/shield.animation_controllers.json。",
+    "difficulty": "中等"
   },
   {
     "question": "如何设计一个拥有多个自定义附魔的装备掉落体系：让不同生物掉落不同部位的装备，且附魔等级随生物难度递增？",
@@ -317,14 +358,16 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/3-自定义盔甲.md"
     ],
-    "golden_answer": "1)先注册各部位装备（武器+头盔+胸甲+护腿+靴子）和多个自定义附魔；2)为不同生物配置独立战利品表：低级生物（僵尸）用enchant_randomly+低levels区间；中级生物（骷髅）用enchant_with_levels+中等区间；高级生物（BOSS）用specific_enchants指定多个高级附魔；3)盔甲各部位通过armor_slot区分，附魔通过primary_slots限定槽位；4)可配合村民交易（武器商/图书管理员）提供额外获取途径。"
+    "golden_answer": "1)先注册各部位装备（武器+头盔+胸甲+护腿+靴子）和多个自定义附魔；2)为不同生物配置独立战利品表：低级生物（僵尸）用enchant_randomly+低levels区间；中级生物（骷髅）用enchant_with_levels+中等区间；高级生物（BOSS）用specific_enchants指定多个高级附魔；3)盔甲各部位通过armor_slot区分，附魔通过primary_slots限定槽位；4)可配合村民交易（武器商/图书管理员）提供额外获取途径。",
+    "difficulty": "复杂"
   },
   {
     "question": "配方中的priority字段有什么作用？多个配方同时匹配时如何决定优先级？",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/5-自定义配方.md"
     ],
-    "golden_answer": "priority字段用于在多个配方都能匹配同一组合成材料时决定优先级，值越高的配方越优先被选中合成。文档中切石机配方示例中使用\"priority\":4。如果配方的identifier和已有配方重复，几个重复配方中只有一个生效（不保证是哪个），需要修改identifier为不同值解决冲突。"
+    "golden_answer": "priority字段用于在多个配方都能匹配同一组合成材料时决定优先级，值越高的配方越优先被选中合成。文档中切石机配方示例中使用\"priority\":4。如果配方的identifier和已有配方重复，几个重复配方中只有一个生效（不保证是哪个），需要修改identifier为不同值解决冲突。",
+    "difficulty": "中等"
   },
   {
     "question": "自定义3D物品的attachable文件与自定义盔甲的attachable文件在结构和渲染控制器选择上有何异同？",
@@ -332,14 +375,16 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/9-自定义3D物品/1-自定义3D物品（一）.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/3-自定义盔甲.md"
     ],
-    "golden_answer": "相同点：都使用identifier关联物品、materials区分default和enchanted、textures配置贴图和附魔光效、geometry指向3D模型。不同点：3D物品渲染控制器用\"controller.render.item_default\"（通用物品渲染），盔甲用\"controller.render.armor\"（盔甲专属渲染）；盔甲attachable需额外配置scripts/parent_setup控制玩家身体部位的可见性变量（如variable.chest_layer_visible=0.0隐藏玩家胸甲层）；盔甲geometry需使用标准部位geometry（如geometry.humanoid.armor.helmet）。"
+    "golden_answer": "相同点：都使用identifier关联物品、materials区分default和enchanted、textures配置贴图和附魔光效、geometry指向3D模型。不同点：3D物品渲染控制器用\"controller.render.item_default\"（通用物品渲染），盔甲用\"controller.render.armor\"（盔甲专属渲染）；盔甲attachable需额外配置scripts/parent_setup控制玩家身体部位的可见性变量（如variable.chest_layer_visible=0.0隐藏玩家胸甲层）；盔甲geometry需使用标准部位geometry（如geometry.humanoid.armor.helmet）。",
+    "difficulty": "复杂"
   },
   {
     "question": "配制一个药水酿造体系：粗制药水+自定义材料→自定义效果药水，再用火药将普通药水转为喷溅型。需配置哪些配方文件？",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/5-自定义配方.md"
     ],
-    "golden_answer": "需要两个配方文件：1)recipe_brewing_mix类型——input:\"minecraft:potion_type:awkward\"、reagent:自定义材料item identifier、output:自定义药水identifier（如\"minecraft:potion_type:custom\"），tags[\"brewing_stand\"]；2)recipe_brewing_container类型——input:\"minecraft:potion\"、reagent:\"minecraft:gunpowder\"、output:\"minecraft:splash_potion\"。两个文件都放在netease_recipes目录下，identifier需不同且全局唯一。"
+    "golden_answer": "需要两个配方文件：1)recipe_brewing_mix类型——input:\"minecraft:potion_type:awkward\"、reagent:自定义材料item identifier、output:自定义药水identifier（如\"minecraft:potion_type:custom\"），tags[\"brewing_stand\"]；2)recipe_brewing_container类型——input:\"minecraft:potion\"、reagent:\"minecraft:gunpowder\"、output:\"minecraft:splash_potion\"。两个文件都放在netease_recipes目录下，identifier需不同且全局唯一。",
+    "difficulty": "复杂"
   },
   {
     "question": "如果自定义武器配置了minecraft:max_damage=153，在铁砧修复时，level=2的剑应该用什么材料修复？为什么？",
@@ -347,7 +392,8 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/2-自定义武器及工具.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"
     ],
-    "golden_answer": "level=2对应铁锭修复。原因是武器level值与修复材料的映射关系：0级speed=2→木板/否则→金锭、1级→石头、2级→铁锭、3级→钻石、>3级无法铁砧修复。这个level值也影响挖掘等级（镐子类型时挖方块是否产生掉落物）。耐久度最大值受max_damage控制，此处设为153。"
+    "golden_answer": "level=2对应铁锭修复。原因是武器level值与修复材料的映射关系：0级speed=2→木板/否则→金锭、1级→石头、2级→铁锭、3级→钻石、>3级无法铁砧修复。这个level值也影响挖掘等级（镐子类型时挖方块是否产生掉落物）。耐久度最大值受max_damage控制，此处设为153。",
+    "difficulty": "复杂"
   },
   {
     "question": "设计一个自定义装备的完整经济循环：怪物掉落带附魔的装备→这些装备可作为熔炉燃料回收→回收所得材料可合成新的自定义物品。描述各环节配置。",
@@ -356,35 +402,40 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/5-自定义配方.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"
     ],
-    "golden_answer": "1)怪物掉落：配置loot_tables，使用enchant_randomly或specific_enchants函数让怪物掉落带附魔的自定义装备。2)燃料回收：在装备JSON中添加netease:fuel组件，duration设为燃烧秒数，使装备可作为熔炉燃料。3)合成新物品：配置recipe_furnace将回收产物（或分解材料）烧炼为中间材料，再通过recipe_shaped/shapeless用中间材料合成新自定义物品。4)所有环节的物品identifier需全局唯一。"
+    "golden_answer": "1)怪物掉落：配置loot_tables，使用enchant_randomly或specific_enchants函数让怪物掉落带附魔的自定义装备。2)燃料回收：在装备JSON中添加netease:fuel组件，duration设为燃烧秒数，使装备可作为熔炉燃料。3)合成新物品：配置recipe_furnace将回收产物（或分解材料）烧炼为中间材料，再通过recipe_shaped/shapeless用中间材料合成新自定义物品。4)所有环节的物品identifier需全局唯一。",
+    "difficulty": "复杂"
   },
   {
     "question": "自定义3D物品的模型骨骼如何与玩家骨骼对齐？root→waist→body→rightArm→rightItem这条路径中，每个节点代表什么？",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/9-自定义3D物品/1-自定义3D物品（一）.md"
     ],
-    "golden_answer": "这是玩家模型的骨骼树层级：root（根骨骼，锚点[0,0,0]）→waist（腰部，锚点[0,12,0]）→body（身体，锚点[0,24,0]）→rightArm（右臂，锚点[-5,22,0]）→rightItem（右手持物，锚点[-6,15,1]）。左手对应leftArm→leftItem（锚点[6,15,1]）。物品模型的基骨骼需放入rightItem下才能正确跟随右手摆动。使用BlockBench导入人型模型后调整物品位置至满意。"
+    "golden_answer": "这是玩家模型的骨骼树层级：root（根骨骼，锚点[0,0,0]）→waist（腰部，锚点[0,12,0]）→body（身体，锚点[0,24,0]）→rightArm（右臂，锚点[-5,22,0]）→rightItem（右手持物，锚点[-6,15,1]）。左手对应leftArm→leftItem（锚点[6,15,1]）。物品模型的基骨骼需放入rightItem下才能正确跟随右手摆动。使用BlockBench导入人型模型后调整物品位置至满意。",
+    "difficulty": "复杂"
   },
   {
     "question": "如何用python脚本实现远程武器蓄力时镜头拉近、释放后恢复的视觉效果？需要监听哪些事件？",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/6-自定义远程武器.md"
     ],
-    "golden_answer": "需要监听三个事件：ClientItemTryUseEvent（右键开始使用→标记isUsingItem=true、记录startUsingTick）、OnScriptTickClient（每帧检查isUsingItem→使用cameraComp.SetFov递减fov值拉近镜头）、RangedWeaponReleaseUsingClientEvent（右键释放→标记isUsingItem=false→SetFov恢复初始fov）。camera组件通过CreateComponent创建，initFov在Init中保存初始值。递减幅度示例：offset*0.15。"
+    "golden_answer": "需要监听三个事件：ClientItemTryUseEvent（右键开始使用→标记isUsingItem=true、记录startUsingTick）、OnScriptTickClient（每帧检查isUsingItem→使用cameraComp.SetFov递减fov值拉近镜头）、RangedWeaponReleaseUsingClientEvent（右键释放→标记isUsingItem=false→SetFov恢复初始fov）。camera组件通过CreateComponent创建，initFov在Init中保存初始值。递减幅度示例：offset*0.15。",
+    "difficulty": "复杂"
   },
   {
     "question": "自定义盾牌中，general animation controller（shield.animation_controllers.json）提供了什么功能？wield、wield_block、third_person等动画状态如何切换？",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/8-自定义盾牌.md"
     ],
-    "golden_answer": "通用动画控制器位于vanilla_netease/animation_controllers/shield.animation_controllers.json，提供wield状态管理。在attachable的animations中配置：wield指向controller.animation.default_custom_shield.wield。具体动画分为wield_main_hand_first_person（主手第一人称）、wield_off_hand_first_person（副手第一人称）、wield_third_person（第三人称）、以及对应的block版本（举盾）。控制器根据手持状态自动切换。自定义动作需在scripts/initialize中定义位置旋转变量。"
+    "golden_answer": "通用动画控制器位于vanilla_netease/animation_controllers/shield.animation_controllers.json，提供wield状态管理。在attachable的animations中配置：wield指向controller.animation.default_custom_shield.wield。具体动画分为wield_main_hand_first_person（主手第一人称）、wield_off_hand_first_person（副手第一人称）、wield_third_person（第三人称）、以及对应的block版本（举盾）。控制器根据手持状态自动切换。自定义动作需在scripts/initialize中定义位置旋转变量。",
+    "difficulty": "中等"
   },
   {
     "question": "熔炉配方(furnace)、高炉配方(blast_furnace)、烟熏炉配方(smoker)和营火配方(campfire)分别适用于什么场景？它们的tags如何区分？",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/5-自定义配方.md"
     ],
-    "golden_answer": "furnace（熔炉）：通用烧炼，烧炼方块和物品转换；blast_furnace（高炉）：专用于烧炼矿石、盔甲和工具，速度是熔炉的2倍；smoker（烟熏炉）：屠夫村民工作站点，专用于烹饪熟食；campfire（营火）：烹饪食物并作为光源或烟雾信号。所有都用recipe_furnace类型，通过tags区分。配置时tags填对应数组值即可。"
+    "golden_answer": "furnace（熔炉）：通用烧炼，烧炼方块和物品转换；blast_furnace（高炉）：专用于烧炼矿石、盔甲和工具，速度是熔炉的2倍；smoker（烟熏炉）：屠夫村民工作站点，专用于烹饪熟食；campfire（营火）：烹饪食物并作为光源或烟雾信号。所有都用recipe_furnace类型，通过tags区分。配置时tags填对应数组值即可。",
+    "difficulty": "中等"
   },
   {
     "question": "如何实现一个完整的自定义装备体系：包括武器、全套盔甲、盾牌，全部支持自定义附魔，不同类型的装备如何配置各自的附魔槽位和防御属性？",
@@ -394,7 +445,8 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/8-自定义盾牌.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"
     ],
-    "golden_answer": "武器(netease:weapon)：type=sword→槽位sword，配置attack_damage+level+enchantment。盔甲(netease:armor)：四个部位armor_slot 0/1/2/3分别对应头/胸/腿/脚→槽位armor_head/torso/legs/feet，配置defense+toughness+knockback_resistance。盾牌(netease:shield)：defence/undefence_damage_source_list控制格挡类型+is_consume_damage控制耐久消耗。附魔统一在netease_enchants注册，primary_slots分别匹配各装备槽位。所有物品通过loot_table和trading配置获取途径。"
+    "golden_answer": "武器(netease:weapon)：type=sword→槽位sword，配置attack_damage+level+enchantment。盔甲(netease:armor)：四个部位armor_slot 0/1/2/3分别对应头/胸/腿/脚→槽位armor_head/torso/legs/feet，配置defense+toughness+knockback_resistance。盾牌(netease:shield)：defence/undefence_damage_source_list控制格挡类型+is_consume_damage控制耐久消耗。附魔统一在netease_enchants注册，primary_slots分别匹配各装备槽位。所有物品通过loot_table和trading配置获取途径。",
+    "difficulty": "复杂"
   },
   {
     "question": "设计一个可蓄力的法杖类武器：使用序列帧展示充能动画，充能完成后发射一个自定义魔法弹抛射物，命中后触发范围效果。需要哪些配置文件和python脚本？",
@@ -403,14 +455,16 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/5-自定义蓄力物品.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"
     ],
-    "golden_answer": "配置文件：1)behavior/netease_items_beh/法杖JSON（identifier:bow结尾、ranged_weapon、use_duration充能时长）；2)resource/netease_items_res/法杖表现JSON（frame_animation序列帧、use_animation=bow）；3)behavior/entities/魔法弹JSON（projectile_entity、netease:pick_up）；4)resource侧entity/贴图/模型/动画/渲染控制器全套。Python脚本：监听RangedWeaponReleaseUsingServerEvent→CreateProjectileEntity发射魔法弹→监听ProjectileDoHitEffectEvent→在命中位置创建范围效果（粒子/伤害）。"
+    "golden_answer": "配置文件：1)behavior/netease_items_beh/法杖JSON（identifier:bow结尾、ranged_weapon、use_duration充能时长）；2)resource/netease_items_res/法杖表现JSON（frame_animation序列帧、use_animation=bow）；3)behavior/entities/魔法弹JSON（projectile_entity、netease:pick_up）；4)resource侧entity/贴图/模型/动画/渲染控制器全套。Python脚本：监听RangedWeaponReleaseUsingServerEvent→CreateProjectileEntity发射魔法弹→监听ProjectileDoHitEffectEvent→在命中位置创建范围效果（粒子/伤害）。",
+    "difficulty": "复杂"
   },
   {
     "question": "盔甲的toughness（韧性）和knockback_resistance（击退抗性）对游戏机制有什么实际影响？与defense（防御值）是什么关系？",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/3-自定义盔甲.md"
     ],
-    "golden_answer": "defense是基础防御值（int），直接减少受到的伤害。toughness是盔甲韧性（0~20），影响高伤害攻击下的防御衰减——韧性越高，面对高伤害时防御值衰减越少。knockback_resistance是击退抗性（0~1），减少受到攻击时的击退距离。三者独立作用：defense减伤、toughness保护defense不被高伤害穿透、knockback_resistance减少位移。可通过netease:armor组件分别配置。"
+    "golden_answer": "defense是基础防御值（int），直接减少受到的伤害。toughness是盔甲韧性（0~20），影响高伤害攻击下的防御衰减——韧性越高，面对高伤害时防御值衰减越少。knockback_resistance是击退抗性（0~1），减少受到攻击时的击退距离。三者独立作用：defense减伤、toughness保护defense不被高伤害穿透、knockback_resistance减少位移。可通过netease:armor组件分别配置。",
+    "difficulty": "复杂"
   },
   {
     "question": "设计一个能发射自定义箭的弩类远程武器，箭命中后给目标施加自定义状态效果。需要哪些配置？",
@@ -418,7 +472,8 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/6-自定义远程武器.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/7-自定义状态效果.md"
     ],
-    "golden_answer": "1)注册远程武器（identifier:bow结尾、ranged_weapon），配置序列帧动画和use_duration；2)在behavior/entities下创建自定义箭entity，设为projectile_entity类型；3)注册自定义状态效果（如中毒、减速等）；4)Python监听ProjectileDoHitEffectEvent，获取被命中实体ID，使用状态效果组件对目标施加效果；5)配合CreateProjectileEntity接口在武器释放时发射箭。资源侧需贴图/模型/动画/渲染控制器全套。"
+    "golden_answer": "1)注册远程武器（identifier:bow结尾、ranged_weapon），配置序列帧动画和use_duration；2)在behavior/entities下创建自定义箭entity，设为projectile_entity类型；3)注册自定义状态效果（如中毒、减速等）；4)Python监听ProjectileDoHitEffectEvent，获取被命中实体ID，使用状态效果组件对目标施加效果；5)配合CreateProjectileEntity接口在武器释放时发射箭。资源侧需贴图/模型/动画/渲染控制器全套。",
+    "difficulty": "复杂"
   },
   {
     "question": "如何配置有序配方实现「破损的剑+修复材料→修复后的剑」，且修复后耐久度在原始耐久度的50%-100%之间随机？",
@@ -426,7 +481,8 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/5-自定义配方.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/2-自定义武器及工具.md"
     ],
-    "golden_answer": "使用minecraft:recipe_shaped，pattern定义合成图案，key中武器项配置\"durability\":[1,N]接受损坏的剑（N为最大耐久），材料项填修复材料identifier。result中同样配置\"durability\":[N*0.5, N]（取整），如max_damage=100则durability:[50,100]。合成预览显示随机值，取出时确定最终耐久。格式为\"durability\":[min,max]，min和max均为正整数。"
+    "golden_answer": "使用minecraft:recipe_shaped，pattern定义合成图案，key中武器项配置\"durability\":[1,N]接受损坏的剑（N为最大耐久），材料项填修复材料identifier。result中同样配置\"durability\":[N*0.5, N]（取整），如max_damage=100则durability:[50,100]。合成预览显示随机值，取出时确定最终耐久。格式为\"durability\":[min,max]，min和max均为正整数。",
+    "difficulty": "复杂"
   },
   {
     "question": "自定义生物蛋、自定义盔甲、自定义远程武器在custom_item_type上各有什么不同？它们的特殊组件分别是什么？",
@@ -435,14 +491,16 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/3-自定义盔甲.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/6-自定义远程武器.md"
     ],
-    "golden_answer": "生物蛋：custom_item_type=egg，特殊组件netease:egg(entity绑定生物identifier)，支持刷怪箱和发射器。盔甲：custom_item_type=armor，特殊组件netease:armor(defense/enchantment/armor_slot/toughness/knockback_resistance)，需额外配置attachables和模型文件。远程武器：custom_item_type=ranged_weapon，特殊组件minecraft:use_duration+netease:frame_animation+netease:render_offsets，identifier必须:bow结尾，需配套抛射物entity。"
+    "golden_answer": "生物蛋：custom_item_type=egg，特殊组件netease:egg(entity绑定生物identifier)，支持刷怪箱和发射器。盔甲：custom_item_type=armor，特殊组件netease:armor(defense/enchantment/armor_slot/toughness/knockback_resistance)，需额外配置attachables和模型文件。远程武器：custom_item_type=ranged_weapon，特殊组件minecraft:use_duration+netease:frame_animation+netease:render_offsets，identifier必须:bow结尾，需配套抛射物entity。",
+    "difficulty": "复杂"
   },
   {
     "question": "自定义盾牌的attachable中，如何让同一面盾牌在主手和副手持有时都播放正确的格挡动画？animation controller如何配置？",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/8-自定义盾牌.md"
     ],
-    "golden_answer": "attachable中使用通用animation controller（controller.animation.default_custom_shield.wield）统一管理。具体动画分为：wield_main_hand_first_person（主手第一人称）、wield_off_hand_first_person（副手第一人称）、wield_third_person（第三人称）、以及对应block版本（举盾状态）。Python侧通过AddPlayerAnimationIntoState分别绑定主手持盾和副手持盾的Molang条件：主手用query.get_equipped_item_full_name=='盾牌id'判断，副手用query.get_equipped_item_full_name('off_hand')=='盾牌id'判断。"
+    "golden_answer": "attachable中使用通用animation controller（controller.animation.default_custom_shield.wield）统一管理。具体动画分为：wield_main_hand_first_person（主手第一人称）、wield_off_hand_first_person（副手第一人称）、wield_third_person（第三人称）、以及对应block版本（举盾状态）。Python侧通过AddPlayerAnimationIntoState分别绑定主手持盾和副手持盾的Molang条件：主手用query.get_equipped_item_full_name=='盾牌id'判断，副手用query.get_equipped_item_full_name('off_hand')=='盾牌id'判断。",
+    "difficulty": "复杂"
   },
   {
     "question": "设计一套带冷却机制的投掷武器：使用后进入冷却，冷却期间物品栏显示冷却动画。需要组合哪些组件？",
@@ -450,7 +508,8 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/6-自定义远程武器.md"
     ],
-    "golden_answer": "使用netease:cooldown组件：category设置冷却类型（同类型共享冷却）、duration设置冷却秒数。配合minecraft:use_duration控制使用动画时长。如果需要投掷动画，使用netease:frame_animation+animate_in_toolbar=true在物品栏显示动画。如果投掷的是抛射物，custom_item_type=projectile_item并用netease:projectile指定抛射物。冷却和序列帧配合use_duration让整个使用→冷却流程完整。"
+    "golden_answer": "使用netease:cooldown组件：category设置冷却类型（同类型共享冷却）、duration设置冷却秒数。配合minecraft:use_duration控制使用动画时长。如果需要投掷动画，使用netease:frame_animation+animate_in_toolbar=true在物品栏显示动画。如果投掷的是抛射物，custom_item_type=projectile_item并用netease:projectile指定抛射物。冷却和序列帧配合use_duration让整个使用→冷却流程完整。",
+    "difficulty": "中等"
   },
   {
     "question": "如果要将一个原版物品（如苹果）替换为自定义食品，同时保留原版配方和村民交易，需要如何配置以确保无缝替换？",
@@ -458,7 +517,8 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/5-自定义配方.md"
     ],
-    "golden_answer": "在原版物品替换场景中：1)创建自定义物品JSON，identifier使用自定义命名空间（不建议用minecraft:前缀避免冲突），在minecraft:food组件中配置nutrition/saturation_modifier/effects等；2)在netease_recipes中新建配方，用自定义物品identifier替换原版identifier作为输入或产出；3)在trading中将交易物品替换为自定义identifier；4)在loot_tables中替换掉落物。注意：完全替换原版物品需要修改所有引用该物品的配方和配置，identifier全局唯一。"
+    "golden_answer": "在原版物品替换场景中：1)创建自定义物品JSON，identifier使用自定义命名空间（不建议用minecraft:前缀避免冲突），在minecraft:food组件中配置nutrition/saturation_modifier/effects等；2)在netease_recipes中新建配方，用自定义物品identifier替换原版identifier作为输入或产出；3)在trading中将交易物品替换为自定义identifier；4)在loot_tables中替换掉落物。注意：完全替换原版物品需要修改所有引用该物品的配方和配置，identifier全局唯一。",
+    "difficulty": "复杂"
   },
   {
     "question": "如何为一个自定义3D武器配置完整的生产链：通过配方合成→铁砧附魔→村民交易三种途径获取？",
@@ -467,14 +527,16 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/5-自定义配方.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"
     ],
-    "golden_answer": "1)配方合成：在netease_recipes创建recipe_shaped，pattern定义合成图案，key映射材料，result填3D武器identifier，可配置durability范围。2)铁砧附魔：确保netease:weapon组件中enchantment>0（附魔能力值），武器支持在铁砧上与附魔书结合。自定义附魔的primary_slots需匹配武器type（如sword→sword）。3)村民交易：在trading目录配置武器商交易JSON，gives填武器identifier，functions用enchant_with_levels随机附魔。三种途径的identifier保持一致。"
+    "golden_answer": "1)配方合成：在netease_recipes创建recipe_shaped，pattern定义合成图案，key映射材料，result填3D武器identifier，可配置durability范围。2)铁砧附魔：确保netease:weapon组件中enchantment>0（附魔能力值），武器支持在铁砧上与附魔书结合。自定义附魔的primary_slots需匹配武器type（如sword→sword）。3)村民交易：在trading目录配置武器商交易JSON，gives填武器identifier，functions用enchant_with_levels随机附魔。三种途径的identifier保持一致。",
+    "difficulty": "复杂"
   },
   {
     "question": "自定义抛射物如何配置使其在命中方块后掉落为可捡起的物品？netease:pick_up组件的参数是什么？",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/6-自定义远程武器.md"
     ],
-    "golden_answer": "在抛射物entity的behavior JSON中配置netease:pick_up组件：item_name指定捡起物品的identifier（如customrangedweapon:projectile），favored_slot指定捡起后放在物品栏的位置（整数索引）。抛射物的netease:custom_entity_type必须设为projectile_entity。发射该抛射物的物品需配置netease:projectile字段指向抛射物identifier，或通过python的CreateProjectileEntity接口发射。"
+    "golden_answer": "在抛射物entity的behavior JSON中配置netease:pick_up组件：item_name指定捡起物品的identifier（如customrangedweapon:projectile），favored_slot指定捡起后放在物品栏的位置（整数索引）。抛射物的netease:custom_entity_type必须设为projectile_entity。发射该抛射物的物品需配置netease:projectile字段指向抛射物identifier，或通过python的CreateProjectileEntity接口发射。",
+    "difficulty": "中等"
   },
   {
     "question": "如何在自定义附魔中使用战利品表同时配置多个附魔（包括自定义和原生）？specific_enchants函数的enchants数组结构是怎样的？",
@@ -482,7 +544,8 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/1-自定义基础物品.md"
     ],
-    "golden_answer": "在战利品表functions中使用specific_enchants函数，enchants数组每项包含：id（附魔identifier，原生如\"soul_speed\"或自定义如\"demoenchant:customenchant1\"）、level（威力范围[min,max]，默认为[1,1]，非附魔等级）。示例：\"enchants\":[{\"id\":\"soul_speed\",\"level\":[1,3]},{\"id\":\"demoenchant:customenchant1\",\"level\":[1,5]}]。可混合原生和自定义附魔。注意：此方法不受is_discoverable限制，即使设为false也可通过此函数获得。"
+    "golden_answer": "在战利品表functions中使用specific_enchants函数，enchants数组每项包含：id（附魔identifier，原生如\"soul_speed\"或自定义如\"demoenchant:customenchant1\"）、level（威力范围[min,max]，默认为[1,1]，非附魔等级）。示例：\"enchants\":[{\"id\":\"soul_speed\",\"level\":[1,3]},{\"id\":\"demoenchant:customenchant1\",\"level\":[1,5]}]。可混合原生和自定义附魔。注意：此方法不受is_discoverable限制，即使设为false也可通过此函数获得。",
+    "difficulty": "中等"
   },
   {
     "question": "创建一个「套装效果」系统：当玩家同时装备同一系列的自定义头盔、胸甲、护腿、靴子时，触发额外属性加成。需要如何设计附魔和Python逻辑？",
@@ -490,14 +553,16 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/3-自定义盔甲.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md"
     ],
-    "golden_answer": "1)注册四个部位的自定义盔甲，使用同系列命名前缀（如setname_head/body/leg/foot）；2)可选：注册套装专属自定义附魔，is_discoverable=false使其仅通过特定途径获取；3)Python监听装备变更事件，使用GetEquItemModEnchant等接口检查玩家四部位是否都装备了该系列盔甲；4)若齐全则通过effect组件给玩家添加增益状态效果（如力量、抗性等），若不全则移除效果。套装标识可通过物品identifier前缀或自定义附魔判断。"
+    "golden_answer": "1)注册四个部位的自定义盔甲，使用同系列命名前缀（如setname_head/body/leg/foot）；2)可选：注册套装专属自定义附魔，is_discoverable=false使其仅通过特定途径获取；3)Python监听装备变更事件，使用GetEquItemModEnchant等接口检查玩家四部位是否都装备了该系列盔甲；4)若齐全则通过effect组件给玩家添加增益状态效果（如力量、抗性等），若不全则移除效果。套装标识可通过物品identifier前缀或自定义附魔判断。",
+    "difficulty": "复杂"
   },
   {
     "question": "自定义配方的identifier如果与已有配方冲突会怎样？如何避免？有序合成中result可以是数组吗？",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/5-自定义配方.md"
     ],
-    "golden_answer": "如果identifier与引擎已有配方或自己mod已有配方重复，则几个重复配方中只有一个生效（不保证是哪个），开发包会报\"Recipe for XX already exists\"错误。解决方法：将identifier修改为不同值。有序合成（recipe_shaped）的result可以是数组，包含多个输出物品，每个输出可设置item/data/count。无序合成（recipe_shapeless）的result只能有一个输出物品。"
+    "golden_answer": "如果identifier与引擎已有配方或自己mod已有配方重复，则几个重复配方中只有一个生效（不保证是哪个），开发包会报\"Recipe for XX already exists\"错误。解决方法：将identifier修改为不同值。有序合成（recipe_shaped）的result可以是数组，包含多个输出物品，每个输出可设置item/data/count。无序合成（recipe_shapeless）的result只能有一个输出物品。",
+    "difficulty": "复杂"
   },
   {
     "question": "如何设计一套完整的远程战斗体系：蓄力弓发射自定义箭→箭附带自定义附魔效果→命中后触发特效并掉落可回收的箭？涉及哪些配置？",
@@ -506,13 +571,15 @@
       "mcguide/20-玩法开发/15-自定义游戏内容/11-自定义附魔文档.md",
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/5-自定义蓄力物品.md"
     ],
-    "golden_answer": "1)弓：netease_items_beh配置ranged_weapon类型（identifier:bow结尾），use_duration+frame_animation序列帧蓄力动画+render_offsets渲染偏移。2)箭：entities下创建projectile_entity，netease:pick_up配置item_name+favored_slot使箭可回收。3)附魔效果：自定义附魔注册在netease_enchants，primary_slots=bow→箭的发射由Python处理，在RangedWeaponReleaseUsingServerEvent中调用CreateProjectileEntity发射。4)命中特效：监听ProjectileDoHitEffectEvent，在回调中播放粒子特效+施加附魔相关状态效果。5)箭回收通过pick_up组件落地后自动生成可捡拾物品。"
+    "golden_answer": "1)弓：netease_items_beh配置ranged_weapon类型（identifier:bow结尾），use_duration+frame_animation序列帧蓄力动画+render_offsets渲染偏移。2)箭：entities下创建projectile_entity，netease:pick_up配置item_name+favored_slot使箭可回收。3)附魔效果：自定义附魔注册在netease_enchants，primary_slots=bow→箭的发射由Python处理，在RangedWeaponReleaseUsingServerEvent中调用CreateProjectileEntity发射。4)命中特效：监听ProjectileDoHitEffectEvent，在回调中播放粒子特效+施加附魔相关状态效果。5)箭回收通过pick_up组件落地后自动生成可捡拾物品。",
+    "difficulty": "复杂"
   },
   {
     "question": "自定义盾牌的defence_damage_source_list和undefence_damage_source_list可以配置哪些伤害类型？如果两个列表有重叠元素会怎样？",
     "relevant_sources": [
       "mcguide/20-玩法开发/15-自定义游戏内容/1-自定义物品/8-自定义盾牌.md"
     ],
-    "golden_answer": "可配置的伤害类型如drowning（溺水）、entity_attack（近战）、projectile（弹射物）、block_explosion（方块爆炸）等。如果两个列表有相同元素，优先防御该伤害类型（即defence_damage_source_list优先）。暂不支持抵御fire、fire_tick（火烧）、suicide（自杀）、wither（凋零）伤害。如果不配置或配置为空，则走原生的格挡伤害逻辑。"
+    "golden_answer": "可配置的伤害类型如drowning（溺水）、entity_attack（近战）、projectile（弹射物）、block_explosion（方块爆炸）等。如果两个列表有相同元素，优先防御该伤害类型（即defence_damage_source_list优先）。暂不支持抵御fire、fire_tick（火烧）、suicide（自杀）、wither（凋零）伤害。如果不配置或配置为空，则走原生的格挡伤害逻辑。",
+    "difficulty": "中等"
   }
 ]
