@@ -16,6 +16,7 @@
 - golden_answer（可选）：参考答案，用于展示但非必需
 """
 
+import asyncio
 import json
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -28,6 +29,7 @@ class EvalItem:
     question: str
     relevant_sources: list[str] = field(default_factory=list)
     golden_answer: str = ""
+    difficulty: str = ""  # "简单" | "中等" | "复杂" | ""
 
     @classmethod
     def from_dict(cls, data: dict) -> "EvalItem":
@@ -74,6 +76,57 @@ class EvalDataset:
     def has_golden_answers(self) -> bool:
         """是否包含参考答案。"""
         return any(item.golden_answer for item in self.items)
+
+    async def classify_difficulty(self) -> None:
+        """对数据集中所有题目进行 LLM 难度分类，结果写入 EvalItem.difficulty。"""
+        from langchain_openai import ChatOpenAI
+        from langchain_core.messages import HumanMessage
+        from ..utils.config import DEEPSEEK_API_KEY, DEEPSEEK_BASE_URL, LLM_MODEL
+
+        PROMPT = """你的任务是判断一个"RAG 系统的用户问题"的难度等级。
+
+判断标准（只看问题本身的推理深度和涉及的知识点数量）：
+- 简单：单一知识点，直接查询文档即可回答，不需要推理
+- 中等：涉及 2-3 个知识点，需要一定推理或跨段落信息整合
+- 复杂：涉及多个知识点、需要多步推理、涉及计算或需要跨文档整合信息
+
+问题：{question}
+
+请只输出一个词：简单、中等 或 复杂。"""
+
+        llm = ChatOpenAI(
+            model=LLM_MODEL,
+            api_key=DEEPSEEK_API_KEY,
+            base_url=DEEPSEEK_BASE_URL,
+            temperature=0.0,
+            max_tokens=32,
+        )
+
+        async def _classify_one(item: EvalItem) -> None:
+            try:
+                msg = await llm.ainvoke([
+                    HumanMessage(content=PROMPT.format(question=item.question))
+                ])
+                text = msg.content.strip()
+                if "复杂" in text:
+                    item.difficulty = "复杂"
+                elif "中等" in text:
+                    item.difficulty = "中等"
+                elif "简单" in text:
+                    item.difficulty = "简单"
+            except Exception:
+                pass  # 分类失败保持 ""
+
+        await asyncio.gather(*[_classify_one(item) for item in self.items])
+
+    @property
+    def difficulty_distribution(self) -> dict[str, int]:
+        """返回各难度题目数量分布。"""
+        dist: dict[str, int] = {}
+        for item in self.items:
+            key = item.difficulty or "未分类"
+            dist[key] = dist.get(key, 0) + 1
+        return dist
 
     def stats(self) -> dict:
         """数据集的统计信息。"""
